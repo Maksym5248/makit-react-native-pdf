@@ -13,9 +13,9 @@ npm run build:web --workspace pdf-reader-example
 npm run typecheck:example
 ```
 
-Web runs at http://127.0.0.1:8093. Choose a local PDF or use the synthetic sample.
-Files stay on your device. Search the sample for `alpha` (six matches).
-The example's Ukrainian labels are retained so its existing UI regression scripts remain useful.
+The Web reader opens *The Night Sky*, a three-page illustrated guide. Use **Find** to search for `stars`, **Pages** to browse thumbnails, or **Open PDF** to choose a local file. Tap the page to hide or restore the controls. The Expo app uses the same reader.
+
+Open http://127.0.0.1:8093/?checks for developer checks and regression fixtures. Search the test fixture for `alpha` (six matches).
 
 ## Native
 

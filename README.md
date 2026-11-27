@@ -1,35 +1,30 @@
 # Makit · React Native PDF
 
-A local-first PDF reader for **React Native iOS, Android and Web**. Native rendering,
-background text search, highlights and thumbnails — without a WebView or a backend.
+Let people read a downloaded manual, find a phrase and jump to the relevant page inside your React Native app. Pass a local file to the native reader on iOS or Android, or a Blob URL on Web. Rendering and text search run on the device.
 
-> Prepared for publication. The npm package is not yet published.
-> Package name: `@makit-kit/react-native-pdf`. Scope ownership must be confirmed before publication.
+[Try the Web playground](https://maksym5248.github.io/makit-react-native-pdf/demo/) · [API reference](docs/api.md) · [Platform support](docs/parity.md)
 
-- **iOS:** PDFKit. **Android:** PDFium / AndroidPdfViewer. **Web:** locally bundled PDF.js workers.
-- Read local files, search their existing text layer, navigate matches and render thumbnails.
-- File ownership stays with your application. No downloader, upload, analytics, cache service or OCR.
-- React 19 / React Native 0.83+, New Architecture. The Expo example targets SDK 55 / RN 0.83.10.
+## Inside the reader
 
-[Documentation and playground](https://maksym5248.github.io/makit-react-native-pdf/)
+![Three Android screenshots showing a PDF page, page thumbnails and a highlighted search result](https://raw.githubusercontent.com/Maksym5248/makit-react-native-pdf/main/site/screenshots/android-reader.jpg)
+
+*Captured in the Expo development build on an Android emulator.*
+
+- **Read a local document.** The demo opens *The Night Sky*, an illustrated three-page guide. Tap the page to hide the controls, or choose **Open PDF** to read your own file.
+- **Jump by thumbnail.** Open **Pages** and tap a preview to go straight to that page.
+- **Find a passage.** Open **Find** and type `stars`. The guide contains three matches. **Next match** takes you to the next occurrence and highlights it in context. Search uses the existing PDF text layer.
+
+The example app supplies the toolbar and panels. Use the reader, search API and thumbnail component to build controls that fit your app. You can also choose continuous or paged reading, set zoom and rotation, and save the current page from the page-change callback. Your app controls file access, downloads and saved positions.
 
 ## Install
 
-Until publication, build and install a local tarball:
+The library targets React 19 and React Native 0.83+ with the New Architecture. The Expo example uses SDK 55 and a development build.
 
 ```sh
-npm ci
-npm run patch:web
-npm run build
-npm pack --pack-destination /tmp
-# In your application:
-npm install /tmp/makit-kit-react-native-pdf-0.1.0.tgz
-# Bare React Native iOS:
-cd ios && bundle exec pod install
+npm install @makit-kit/react-native-pdf
 ```
 
-After publication, use `npm install @makit-kit/react-native-pdf` instead.
-See [Expo setup](docs/expo.md) for development builds and Prebuild.
+For bare iOS projects, run `cd ios && bundle exec pod install`. For Expo, follow the [Expo setup](docs/expo.md). Web also requires the peers and worker setup below.
 
 ## Quick start
 

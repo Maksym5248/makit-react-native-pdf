@@ -22,6 +22,10 @@ for (const [slug, source, title] of pages) {
     const target = targets.get(normalized) || (normalized === 'example/README.md' ? '../demo/' : normalized === 'LICENSE' || normalized === 'NOTICE' ? '../' + normalized : href);
     return `<a href="${escape(target)}">${text}</a>`;
   };
+  renderer.image = ({ href, text }) => {
+    const asset = href.replace('https://raw.githubusercontent.com/Maksym5248/makit-react-native-pdf/main/site/screenshots/', '../screenshots/');
+    return `<img src="${escape(asset)}" alt="${escape(text)}">`;
+  };
   const content = marked.parse(fs.readFileSync(path.join(root, source), 'utf8'), { renderer });
   const nav = pages.map(([id, , label]) => `<a href="./${id}.html" ${id === slug ? 'aria-current="page"' : ''}>${label}</a>`).join('');
   fs.writeFileSync(path.join(output, 'docs', slug + '.html'), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · Makit PDF Reader</title><link rel="stylesheet" href="../style.css"><link rel="icon" href="../icon.svg" type="image/svg+xml"></head><body><header><nav class="nav" aria-label="Main navigation"><a class="brand" href="../">makit<span>PDF reader</span></a><div class="links"><a href="./">Documentation</a><a href="../demo/">Playground</a><a href="../">Home</a></div></nav></header><main class="wrap docs-layout"><nav class="sidebar" aria-label="Documentation">${nav}</nav><article class="doc">${content}</article></main></body></html>`);

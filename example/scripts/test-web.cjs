@@ -24,7 +24,20 @@ fs.mkdirSync(output, { recursive: true });
         );
   });
   try {
-    await page.goto('http://127.0.0.1:8093');
+    await page.goto('http://127.0.0.1:8093/');
+    await page.getByText('The Night Sky', { exact: true }).waitFor();
+    await page.getByText('1 / 3', { exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Pages', exact: true }).click();
+    await page.getByRole('button', { name: 'Page 2', exact: true }).click();
+    await page.getByText('2 / 3', { exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Find', exact: true }).click();
+    await page.getByLabel('Find in document').fill('stars');
+    await page.getByText('1 of 3', { exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Next match', exact: true }).click();
+    await page.getByText('2 of 3', { exact: true }).waitFor();
+    await page.getByText('3 / 3', { exact: true }).waitFor();
+    await page.locator('mark[data-active-match]').first().waitFor();
+    await page.goto('http://127.0.0.1:8093/?checks');
     await page
       .getByRole('button', { name: 'Run API checks', exact: true })
       .click();
@@ -38,14 +51,12 @@ fs.mkdirSync(output, { recursive: true });
     await page
       .getByRole('button', { name: 'Close renderer checks', exact: true })
       .click();
-    await page
-      .getByRole('button', { name: 'Тестовий PDF', exact: true })
-      .click();
+    await page.getByRole('button', { name: 'Sample PDF', exact: true }).click();
     await page.getByText('1 / 3', { exact: true }).waitFor();
-    await page.getByRole('button', { name: 'Пошук', exact: true }).click();
-    await page.getByLabel('Пошук у PDF', { exact: true }).fill('alpha');
-    await page.getByText(/^6 збігів за/).waitFor();
-    await page.getByRole('button', { name: 'Збіг →', exact: true }).click();
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
+    await page.getByLabel('Search PDF', { exact: true }).fill('alpha');
+    await page.getByText(/^6 matches in/).waitFor();
+    await page.getByRole('button', { name: 'Match →', exact: true }).click();
     await page.getByText('1/6', { exact: true }).waitFor();
     await page.waitForFunction(() => {
       const active = document.querySelector('mark[data-active-match]');
@@ -57,37 +68,37 @@ fs.mkdirSync(output, { recursive: true });
           panel.getBoundingClientRect().bottom
       );
     });
-    await page.getByRole('button', { name: 'Сховати', exact: true }).click();
+    await page.getByRole('button', { name: 'Hide', exact: true }).click();
     await page.locator('mark').first().waitFor();
     await page.screenshot({ path: path.join(output, 'web-search.png') });
-    await page.getByRole('button', { name: 'Сторінки', exact: true }).click();
+    await page.getByRole('button', { name: 'Pages', exact: true }).click();
     await page.getByRole('button', { name: 'Page 3', exact: true }).click();
     await page.getByText('3 / 3', { exact: true }).waitFor();
-    await page.getByRole('button', { name: 'Вигляд', exact: true }).click();
+    await page.getByRole('button', { name: 'View', exact: true }).click();
     await page.getByRole('switch', { name: 'Horizontal' }).click();
     await page.getByRole('switch', { name: 'Paging' }).click();
-    await page.getByRole('button', { name: 'Поворот 0°', exact: true }).click();
     await page
-      .getByRole('button', { name: 'Уся сторінка', exact: true })
+      .getByRole('button', { name: 'Rotation 0°', exact: true })
+      .click();
+    await page
+      .getByRole('button', { name: 'Fit page', exact: true })
       .count()
       .then(async count => {
         if (!count)
           await page
-            .getByRole('button', { name: 'За шириною', exact: true })
+            .getByRole('button', { name: 'Fit width', exact: true })
             .click();
       });
     await page.getByText('3 / 3', { exact: true }).waitFor();
-    await page.getByRole('button', { name: 'Сховати', exact: true }).click();
+    await page.getByRole('button', { name: 'Hide', exact: true }).click();
     await page.screenshot({ path: path.join(output, 'web-rotated.png') });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
-    await page
-      .getByRole('button', { name: 'Тестовий PDF', exact: true })
-      .click();
-    await page.getByRole('button', { name: 'Пошук', exact: true }).click();
-    await page.getByLabel('Пошук у PDF', { exact: true }).fill('alpha');
-    await page.getByText(/^6 збігів за/).waitFor();
-    await page.getByRole('button', { name: 'Збіг →', exact: true }).click();
+    await page.getByRole('button', { name: 'Sample PDF', exact: true }).click();
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
+    await page.getByLabel('Search PDF', { exact: true }).fill('alpha');
+    await page.getByText(/^6 matches in/).waitFor();
+    await page.getByRole('button', { name: 'Match →', exact: true }).click();
     await page.waitForFunction(() => {
       const active = document.querySelector('mark[data-active-match]');
       const panel = document.querySelector('[data-testid="example.panel"]');

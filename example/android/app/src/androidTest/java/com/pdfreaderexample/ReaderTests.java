@@ -58,7 +58,7 @@ public class ReaderTests {
     @Test
     public void testPageTapControls() throws Exception {
         launch();
-        tap("ТЕСТОВИЙ PDF");
+        tap("SAMPLE PDF");
         awaitText("1 / 3", 15000);
         Rect bounds = new Rect();
         InstrumentationRegistry.getInstrumentation().getUiAutomation().getRootInActiveWindow().getBoundsInScreen(bounds);
@@ -69,13 +69,13 @@ public class ReaderTests {
         inject(time, MotionEvent.ACTION_UP, x, y, 0, 1);
         SystemClock.sleep(700);
         screenshot("pdf-tap-hidden.png");
-        AccessibilityNodeInfo hidden = find(InstrumentationRegistry.getInstrumentation().getUiAutomation().getRootInActiveWindow(), "ПОШУК");
+        AccessibilityNodeInfo hidden = find(InstrumentationRegistry.getInstrumentation().getUiAutomation().getRootInActiveWindow(), "SEARCH");
         assertTrue(hidden == null || !hidden.isVisibleToUser());
         time = SystemClock.uptimeMillis();
         inject(time, MotionEvent.ACTION_DOWN, x, y, 0, 1);
         inject(time, MotionEvent.ACTION_UP, x, y, 0, 1);
         SystemClock.sleep(700);
-        assertTrue(awaitText("ПОШУК", 5000).isVisibleToUser());
+        assertTrue(awaitText("SEARCH", 5000).isVisibleToUser());
         awaitText("1 / 3", 5000);
         screenshot("pdf-tap-restored.png");
     }
@@ -83,7 +83,7 @@ public class ReaderTests {
     @Test
     public void testStoppingScrollDoesNotToggleTools() throws Exception {
         launch();
-        tap("ТЕСТОВИЙ PDF");
+        tap("SAMPLE PDF");
         awaitText("1 / 3", 15000);
         SystemClock.sleep(500);
         Rect bounds = new Rect();
@@ -103,7 +103,7 @@ public class ReaderTests {
         inject(time, MotionEvent.ACTION_DOWN, x, endY, 0, 1);
         inject(time, MotionEvent.ACTION_UP, x, endY, 0, 1);
         SystemClock.sleep(700);
-        assertTrue(awaitText("ПОШУК", 5000).isVisibleToUser());
+        assertTrue(awaitText("SEARCH", 5000).isVisibleToUser());
         screenshot("pdf-stop-scroll-tools.png");
     }
 
@@ -127,42 +127,42 @@ public class ReaderTests {
     @Test
     public void testSearchThumbnailsAndReadingModes() throws Exception {
         launch();
-        assertFalse(button("ПОШУК").isEnabled());
-        tap("ТЕСТОВИЙ PDF");
+        assertFalse(button("SEARCH").isEnabled());
+        tap("SAMPLE PDF");
         awaitText("1 / 3", 15000);
-        assertTrue(button("ПОШУК").isEnabled());
+        assertTrue(button("SEARCH").isEnabled());
         screenshot("pdf-enabled-buttons.png");
-        tap("ПОШУК");
-        AccessibilityNodeInfo input = awaitText("Пошук у PDF", 10000);
+        tap("SEARCH");
+        AccessibilityNodeInfo input = awaitText("Search PDF", 10000);
         android.os.Bundle arguments = new android.os.Bundle();
         arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "alpha");
         assertTrue(input.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments));
-        tap("ЗБІГ →");
+        tap("MATCH →");
         awaitText("1/6", 15000);
-        tap("ЗБІГ →");
+        tap("MATCH →");
         awaitText("2/6", 10000);
-        tap("← ЗБІГ");
+        tap("← MATCH");
         awaitText("1/6", 10000);
-        tap("СХОВАТИ");
+        tap("HIDE");
         screenshot("pdf-search-e2e.png");
-        tap("СТОРІНКИ");
+        tap("PAGES");
         tap("Page 3");
         awaitText("3 / 3", 10000);
-        tap("ВИГЛЯД");
+        tap("VIEW");
         tap("Horizontal");
         tap("Paging");
-        tap("ПОВОРОТ 0°");
-        awaitText("ПОВОРОТ 90°", 10000);
-        tap("ЗА ШИРИНОЮ");
-        awaitText("УСЯ СТОРІНКА", 10000);
+        tap("ROTATION 0°");
+        awaitText("ROTATION 90°", 10000);
+        tap("FIT WIDTH");
+        awaitText("FIT PAGE", 10000);
         awaitText("3 / 3", 10000);
-        tap("СХОВАТИ");
+        tap("HIDE");
         screenshot("pdf-rotated-e2e.png");
-        tap("ФАЙЛ");
-        tap("ЗАКРИТИ");
-        awaitText("Документ закрито", 10000);
-        assertFalse(button("ПОШУК").isEnabled());
-        tap("ТЕСТОВИЙ PDF");
+        tap("FILE");
+        tap("CLOSE");
+        awaitText("Document closed", 10000);
+        assertFalse(button("SEARCH").isEnabled());
+        tap("SAMPLE PDF");
         awaitText("1 / 3", 15000);
     }
 
@@ -175,44 +175,44 @@ public class ReaderTests {
         android.os.Bundle arguments = new android.os.Bundle();
         arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, path);
         assertTrue(localFile.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments));
-        tap("ВІДКРИТИ ЛОКАЛЬНИЙ URI");
+        tap("OPEN LOCAL URI");
         awaitText("1 / 6", 15000);
-        tap("ПОШУК");
-        AccessibilityNodeInfo input = awaitText("Пошук у PDF", 10000);
+        tap("SEARCH");
+        AccessibilityNodeInfo input = awaitText("Search PDF", 10000);
         arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "Synthetic");
         assertTrue(input.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments));
-        tap("ЗБІГ →");
+        tap("MATCH →");
         awaitText("1/5", 15000);
-        tap("СХОВАТИ");
+        tap("HIDE");
         awaitText("1 / 6", 10000);
         screenshot("prepared-page-1.png");
-        tap("ПОШУК");
+        tap("SEARCH");
         for (int match = 2; match <= 5; match++) {
-            tap("ЗБІГ →");
+            tap("MATCH →");
             awaitText(match + "/5", 10000);
-            tap("СХОВАТИ");
+            tap("HIDE");
             SystemClock.sleep(1000);
             screenshot("prepared-page-" + match + ".png");
             awaitText(match + " / 6", 10000);
-            tap("ПОШУК");
+            tap("SEARCH");
         }
-        tap("СХОВАТИ");
+        tap("HIDE");
         screenshot("prepared-intrinsic-rotation.png");
-        tap("ВИГЛЯД");
+        tap("VIEW");
         tap("+");
         awaitText("120%", 10000);
-        tap("ПОВОРОТ 0°");
-        awaitText("ПОВОРОТ 90°", 10000);
+        tap("ROTATION 0°");
+        awaitText("ROTATION 90°", 10000);
         awaitText("5 / 6", 10000);
-        tap("СХОВАТИ");
+        tap("HIDE");
         SystemClock.sleep(700);
         screenshot("prepared-zoom-rotation.png");
-        tap("ПОШУК");
-        input = awaitText("Пошук у PDF", 10000);
+        tap("SEARCH");
+        input = awaitText("Search PDF", 10000);
         arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "no-such-text");
         assertTrue(input.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments));
         awaitText("0/0", 10000);
-        tap("СХОВАТИ");
+        tap("HIDE");
         SystemClock.sleep(700);
         screenshot("prepared-no-match.png");
     }
@@ -261,7 +261,7 @@ public class ReaderTests {
     @Test
     public void testRealTwoFingerPinch() throws Exception {
         launch();
-        tap("ТЕСТОВИЙ PDF");
+        tap("SAMPLE PDF");
         awaitText("1 / 3", 15000);
         Rect bounds = new Rect();
         InstrumentationRegistry.getInstrumentation().getUiAutomation().getRootInActiveWindow().getBoundsInScreen(bounds);
@@ -277,8 +277,8 @@ public class ReaderTests {
         }
         inject(time, MotionEvent.ACTION_POINTER_UP | (1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT), x, y, start * 2, 2);
         inject(time, MotionEvent.ACTION_UP, x, y, start * 2, 1);
-        tap("ВИГЛЯД");
-        awaitText("Вигляд і дані", 10000);
+        tap("VIEW");
+        awaitText("View settings", 10000);
         int zoom = 0;
         long deadline = SystemClock.uptimeMillis() + 5000;
         while (SystemClock.uptimeMillis() < deadline) {
@@ -287,10 +287,10 @@ public class ReaderTests {
             SystemClock.sleep(100);
         }
         assertTrue("Pinch zoom callback: " + zoom + ", bounds: " + bounds, zoom > 110 && zoom <= 300);
-        tap("СХОВАТИ");
-        tap("НАСТУПНА");
+        tap("HIDE");
+        tap("NEXT");
         awaitText("2 / 3", 10000);
-        tap("ВИГЛЯД");
+        tap("VIEW");
         awaitText("2 / 3", 10000);
         screenshot("pdf-zoom-e2e.png");
     }
