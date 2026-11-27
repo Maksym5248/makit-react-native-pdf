@@ -23,7 +23,7 @@ for (const [slug, source, title] of pages) {
     return `<a href="${escape(target)}">${text}</a>`;
   };
   renderer.image = ({ href, text }) => {
-    const asset = href.replace('https://raw.githubusercontent.com/Maksym5248/makit-react-native-pdf/main/site/screenshots/', '../screenshots/');
+    const asset = href.replace(/^https:\/\/raw\.githubusercontent\.com\/Maksym5248\/makit-react-native-pdf\/(?:main|[a-f0-9]{40})\/site\/screenshots\//, '../screenshots/');
     return `<img src="${escape(asset)}" alt="${escape(text)}">`;
   };
   const content = marked.parse(fs.readFileSync(path.join(root, source), 'utf8'), { renderer });

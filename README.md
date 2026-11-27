@@ -6,7 +6,7 @@ Let people read a downloaded manual, find a phrase and jump to the relevant page
 
 ## Inside the reader
 
-![Three Android screenshots showing a PDF page, page thumbnails and a highlighted search result](https://raw.githubusercontent.com/Maksym5248/makit-react-native-pdf/main/site/screenshots/android-reader.jpg)
+![Three Android screenshots showing a PDF page, page thumbnails and a highlighted search result](https://raw.githubusercontent.com/Maksym5248/makit-react-native-pdf/6807d84b8728d40edf1ecae1f0bd6bb2c8fb1306/site/screenshots/android-reader.jpg)
 
 *Captured in the Expo development build on an Android emulator.*
 
