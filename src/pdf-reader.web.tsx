@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { PDFDocumentProxy, PDFWorker } from 'pdfjs-dist';
 import { StyleSheet, View } from 'react-native';
@@ -181,6 +181,10 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
         if (total) jump(requestedPage.current);
     }, [props.rotation, props.fitPolicy, props.enablePaging, props.enableRTL, jump, total]);
 
+    useLayoutEffect(() => {
+        if (total) jump(requestedPage.current);
+    }, [pageRatios, size.width, size.height, scale, jump, total]);
+
     const onLoad = async (pdf: PDFDocumentProxy) => {
         try {
             const page = await pdf.getPage(clampPage(requestedPage.current, pdf.numPages));
@@ -278,6 +282,7 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
                     overflowX: props.scrollEnabled === false ? 'hidden' : 'auto',
                     scrollSnapType: props.enablePaging && !single ? `${horizontal ? 'x' : 'y'} mandatory` : undefined,
                     overscrollBehavior: 'contain',
+                    overflowAnchor: 'none',
                     direction: 'ltr',
                 }}
             >

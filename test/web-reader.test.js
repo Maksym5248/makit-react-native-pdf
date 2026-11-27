@@ -243,3 +243,14 @@ test('a small fully visible neighbouring page does not replace the larger visibl
     ]));
     expect(onPageChanged).toHaveBeenLastCalledWith(2, 8);
 });
+
+
+test('keeps the requested page aligned when asynchronous page sizes arrive', async () => {
+    const ref = React.createRef();
+    await mount({ sourceUri: 'blob:https://reader.test/page-layout', ref });
+    await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
+    await act(() => ref.current.setPage(2));
+    container.scrollTop = 200;
+    await act(() => tree.root.findAllByType(PdfPage)[0].props.onSize(800, 600));
+    expect(container.scrollTop).toBe(810);
+});
