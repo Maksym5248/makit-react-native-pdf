@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
-import { PdfReader, type IPdfReaderRef } from '@makit/react-native-pdf';
+import { PdfReader, type IPdfReaderRef } from '@makit-kit/react-native-pdf';
 import { fixtureBase64 } from '../example/src/fixture';
 
 export default function App() {

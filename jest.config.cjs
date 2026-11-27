@@ -15,6 +15,6 @@ module.exports = {
     moduleNameMapper: {
         '\\.css$': '<rootDir>/test/empty.cjs',
         '^react-native$': '<rootDir>/test/react-native.cjs',
-        '^@makit/react-native-pdf$': '<rootDir>/src/index.ts',
+        '^@makit-kit/react-native-pdf$': '<rootDir>/src/index.ts',
     },
 };

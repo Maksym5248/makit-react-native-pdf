@@ -5,7 +5,7 @@ import {
   openPdfSearch,
   type IPdfReaderProps,
   type IPdfReaderRef,
-} from '@makit/react-native-pdf';
+} from '@makit-kit/react-native-pdf';
 import { Text, View } from 'react-native';
 
 import { Button } from './button';

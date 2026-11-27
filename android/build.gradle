@@ -1,4 +1,4 @@
-description = '@makit/react-native-pdf'
+description = '@makit-kit/react-native-pdf'
 
 buildscript {
     ext.safeExtGet = { prop, fallback ->

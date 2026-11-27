@@ -3,13 +3,15 @@
 A local-first PDF reader for **React Native iOS, Android and Web**. Native rendering,
 background text search, highlights and thumbnails — without a WebView or a backend.
 
-> Prepared for publication. The npm package and public website are not yet published.
-> Package name: `@makit/react-native-pdf`. Scope ownership must be confirmed before publication.
+> Prepared for publication. The npm package is not yet published.
+> Package name: `@makit-kit/react-native-pdf`. Scope ownership must be confirmed before publication.
 
 - **iOS:** PDFKit. **Android:** PDFium / AndroidPdfViewer. **Web:** locally bundled PDF.js workers.
 - Read local files, search their existing text layer, navigate matches and render thumbnails.
 - File ownership stays with your application. No downloader, upload, analytics, cache service or OCR.
 - React 19 / React Native 0.83+, New Architecture. The Expo example targets SDK 55 / RN 0.83.10.
+
+[Documentation and playground](https://maksym5248.github.io/makit-react-native-pdf/)
 
 ## Install
 
@@ -21,18 +23,18 @@ npm run patch:web
 npm run build
 npm pack --pack-destination /tmp
 # In your application:
-npm install /tmp/makit-react-native-pdf-0.1.0.tgz
+npm install /tmp/makit-kit-react-native-pdf-0.1.0.tgz
 # Bare React Native iOS:
 cd ios && bundle exec pod install
 ```
 
-After publication, use `npm install @makit/react-native-pdf` instead.
+After publication, use `npm install @makit-kit/react-native-pdf` instead.
 See [Expo setup](docs/expo.md) for development builds and Prebuild.
 
 ## Quick start
 
 ```tsx
-import { PdfReader } from '@makit/react-native-pdf';
+import { PdfReader } from '@makit-kit/react-native-pdf';
 
 <PdfReader
   sourceUri={localFileUri}
@@ -51,7 +53,7 @@ The application handles file permissions and keeps the file/Blob alive while in 
 Install `react-pdf@9.2.1 pdfjs-dist@4.8.69 react-native-web`, then apply the supplied fixes:
 
 ```sh
-node node_modules/@makit/react-native-pdf/scripts/apply-web-patches.cjs
+node node_modules/@makit-kit/react-native-pdf/scripts/apply-web-patches.cjs
 ```
 
 Add that command to your application's `postinstall`. It checks exact peer versions,
