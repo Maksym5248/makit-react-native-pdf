@@ -1,0 +1,96 @@
+diff --git a/node_modules/react-pdf/src/Page/TextLayer.tsx b/node_modules/react-pdf/src/Page/TextLayer.tsx
+--- a/node_modules/react-pdf/src/Page/TextLayer.tsx
++++ b/node_modules/react-pdf/src/Page/TextLayer.tsx
+@@ -195,10 +195,12 @@
+ 
+       const cancellable = new pdfjs.TextLayer(parameters);
+       const runningTask = cancellable;
++      let cancelled = false;
+ 
+       cancellable
+         .render()
+         .then(() => {
++          if (cancelled) return;
+           const end = document.createElement('div');
+           end.className = 'endOfContent';
+           layer.append(end);
+@@ -233,9 +235,14 @@
+           // Intentional immediate callback
+           onRenderSuccess();
+         })
+-        .catch(onRenderError);
+-
+-      return () => cancelRunningTask(runningTask);
++        .catch((error: Error) => {
++          if (!cancelled) onRenderError(error);
++        });
++
++      return () => {
++        cancelled = true;
++        cancelRunningTask(runningTask);
++      };
+     },
+     [
+       customTextRenderer,
+diff --git a/node_modules/react-pdf/dist/esm/Page/TextLayer.js b/node_modules/react-pdf/dist/esm/Page/TextLayer.js
+--- a/node_modules/react-pdf/dist/esm/Page/TextLayer.js
++++ b/node_modules/react-pdf/dist/esm/Page/TextLayer.js
+@@ -125,9 +125,11 @@
+         };
+         const cancellable = new pdfjs.TextLayer(parameters);
+         const runningTask = cancellable;
++        let cancelled = false;
+         cancellable
+             .render()
+             .then(() => {
++            if (cancelled) return;
+             const end = document.createElement('div');
+             end.className = 'endOfContent';
+             layer.append(end);
+@@ -152,8 +154,13 @@
+             // Intentional immediate callback
+             onRenderSuccess();
+         })
+-            .catch(onRenderError);
+-        return () => cancelRunningTask(runningTask);
++            .catch((error) => {
++            if (!cancelled) onRenderError(error);
++        });
++        return () => {
++            cancelled = true;
++            cancelRunningTask(runningTask);
++        };
+     }, [
+         customTextRenderer,
+         onRenderError,
+diff --git a/node_modules/react-pdf/dist/cjs/Page/TextLayer.js b/node_modules/react-pdf/dist/cjs/Page/TextLayer.js
+--- a/node_modules/react-pdf/dist/cjs/Page/TextLayer.js
++++ b/node_modules/react-pdf/dist/cjs/Page/TextLayer.js
+@@ -154,9 +154,11 @@
+         };
+         const cancellable = new pdfjs.TextLayer(parameters);
+         const runningTask = cancellable;
++        let cancelled = false;
+         cancellable
+             .render()
+             .then(() => {
++            if (cancelled) return;
+             const end = document.createElement('div');
+             end.className = 'endOfContent';
+             layer.append(end);
+@@ -181,8 +183,13 @@
+             // Intentional immediate callback
+             onRenderSuccess();
+         })
+-            .catch(onRenderError);
+-        return () => (0, utils_js_1.cancelRunningTask)(runningTask);
++            .catch((error) => {
++            if (!cancelled) onRenderError(error);
++        });
++        return () => {
++            cancelled = true;
++            (0, utils_js_1.cancelRunningTask)(runningTask);
++        };
+     }, [
+         customTextRenderer,
+         onRenderError,

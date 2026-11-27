@@ -1,0 +1,9 @@
+pluginManagement { includeBuild("../../../../node_modules/@react-native/gradle-plugin") }
+plugins { id("com.facebook.react.settings") }
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
+    // Invoke the installed CLI directly so package-manager output cannot corrupt JSON.
+    ex.autolinkLibrariesFromCommand(["node", file("../../../../node_modules/react-native/cli.js").absolutePath, "config"])
+}
+rootProject.name = 'PdfReaderExample'
+include ':app'
+includeBuild('../../../../node_modules/@react-native/gradle-plugin')

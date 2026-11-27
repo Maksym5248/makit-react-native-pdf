@@ -1,0 +1,17 @@
+The native view implementation derives from react-native-pdf 7.0.4 by Wonday
+(MIT; original copyright and license retained in LICENSE and source headers).
+
+The package adds a local-only API, JSI search/metadata/thumbnails, search overlays,
+rotation, lifecycle fixes and a web renderer. It does not include the upstream
+JavaScript downloader.
+
+Runtime engines are supplied separately by the platform/dependency managers:
+- Apple PDFKit (iOS system framework)
+- AndroidPdfViewer 4.0.1 (Apache-2.0)
+- PdfiumAndroid 1.0.35 and its PDFium native dependencies (their upstream notices apply)
+- React-PDF 9.2.1 (MIT) and PDF.js 4.8.69 (Apache-2.0), optional web peers
+
+Consumers must preserve the licenses/notices of the dependencies distributed
+with their application. No private test documents or fonts are shipped in this
+npm package. Internal native identifiers retain the Ammo prefix for registration
+compatibility; the package has no dependency on the Ammo application.

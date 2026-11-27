@@ -1,0 +1,12 @@
+diff --git a/node_modules/pdfjs-dist/build/pdf.mjs b/node_modules/pdfjs-dist/build/pdf.mjs
+--- a/node_modules/pdfjs-dist/build/pdf.mjs
++++ b/node_modules/pdfjs-dist/build/pdf.mjs
+@@ -10164,7 +10164,7 @@
+   _onHeadersReceived() {
+     const fullRequestXhrId = this._fullRequestId;
+     const fullRequestXhr = this._manager.getRequestXhr(fullRequestXhrId);
+-    const responseHeaders = new Headers(fullRequestXhr.getAllResponseHeaders().trim().split(/[\r\n]+/).map(x => {
++    const responseHeaders = new Headers(fullRequestXhr.getAllResponseHeaders().trim().split(/[\r\n]+/).filter(Boolean).map(x => {
+       const [key, ...val] = x.split(": ");
+       return [key, val.join(": ")];
+     }));

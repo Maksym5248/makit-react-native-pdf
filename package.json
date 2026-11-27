@@ -1,0 +1,97 @@
+{
+  "name": "@maksym5248/react-native-pdf-reader",
+  "version": "0.1.0",
+  "description": "Local-file PDF reader for React Native and Web",
+  "license": "MIT",
+  "main": "lib/module/index.js",
+  "react-native": "src/index.ts",
+  "types": "lib/types/index.d.ts",
+  "peerDependencies": {
+    "react": ">=19",
+    "react-native": ">=0.83",
+    "react-pdf": "9.2.1",
+    "pdfjs-dist": "4.8.69"
+  },
+  "peerDependenciesMeta": {
+    "react-pdf": {
+      "optional": true
+    },
+    "pdfjs-dist": {
+      "optional": true
+    }
+  },
+  "codegenConfig": {
+    "name": "ammopdf",
+    "type": "all",
+    "jsSrcsDir": "src/native",
+    "android": {
+      "javaPackageName": "org.ammo.pdf"
+    },
+    "ios": {
+      "componentProvider": {
+        "AmmoPDFPdfView": "AmmoPDFPdfView"
+      },
+      "modulesProvider": {
+        "AmmoPdfSearch": "AmmoPdfSearch"
+      }
+    }
+  },
+  "scripts": {
+    "test": "jest --config jest.config.cjs --runInBand",
+    "test:ios-geometry": "node test/ios-geometry.cjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test:web-build": "node test/web-build.cjs",
+    "lint": "eslint src --ext .ts,.tsx",
+    "build": "node scripts/build.cjs",
+    "prepack": "npm run build"
+  },
+  "module": "lib/module/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "react-native": "./src/index.ts",
+      "browser": "./lib/module/index.web.js",
+      "default": "./lib/module/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib",
+    "android/src",
+    "android/build.gradle",
+    "android/consumer-rules.pro",
+    "ios",
+    "LocalPdfReader.podspec",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "docs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Maksym5248/demining.git",
+    "directory": "packages/pdf-reader"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "react-native",
+    "pdf",
+    "local",
+    "search",
+    "highlight",
+    "jsi"
+  ],
+  "devDependencies": {
+    "@babel/core": "7.28.5",
+    "@babel/preset-typescript": "7.28.5",
+    "@babel/preset-react": "7.28.5",
+    "@babel/plugin-transform-flow-strip-types": "7.27.1",
+    "typescript": "5.3.3"
+  }
+}

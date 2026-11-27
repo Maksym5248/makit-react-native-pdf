@@ -1,0 +1,50 @@
+# Run only on an existing Ammo-E2E / Ammo_E2E device, with APP_ID set explicitly.
+appId: ${APP_ID}
+---
+- launchApp
+- tapOn: "(?i)Тестовий PDF"
+- extendedWaitUntil:
+    visible: "1 / 3"
+    timeout: 15000
+- tapOn: "(?i)Пошук"
+- tapOn: "(?i)Пошук у PDF"
+- inputText: "alpha"
+- extendedWaitUntil:
+    visible: "6 збігів за.*"
+    timeout: 15000
+- hideKeyboard
+- tapOn: "(?i)Збіг →"
+- assertVisible: "1/6"
+- tapOn: "(?i)Збіг →"
+- assertVisible: "2/6"
+- tapOn: "(?i)← Збіг"
+- assertVisible: "1/6"
+- tapOn: "(?i)Сховати"
+- tapOn: "(?i)Сторінки"
+- tapOn: "(?i)Page 3"
+- assertVisible: "3 / 3"
+- tapOn: "(?i)Вигляд"
+- assertVisible: "3 / 3"
+- assertVisible: ".*поворот файла 90°.*"
+- tapOn: "(?i)Horizontal"
+- tapOn: "(?i)Paging"
+- tapOn: "(?i)Поворот 0°"
+- assertVisible: "(?i)Поворот 90°"
+- tapOn: "(?i)За шириною"
+- assertVisible: "(?i)Уся сторінка"
+- assertVisible: "3 / 3"
+- tapOn: "(?i)Сховати"
+- tapOn: "(?i)Сторінки"
+- tapOn: "(?i)Page 1"
+- assertVisible: "1 / 3"
+- tapOn: "(?i)Вигляд"
+- tapOn: "(?i)Horizontal"
+- tapOn: "(?i)Paging"
+- tapOn: "(?i)Сховати"
+- tapOn: "(?i)Файл"
+- tapOn: "(?i)Закрити"
+- assertVisible: "Документ закрито"
+- tapOn: "(?i)Тестовий PDF"
+- extendedWaitUntil:
+    visible: "1 / 3"
+    timeout: 15000

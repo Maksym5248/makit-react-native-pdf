@@ -1,0 +1,70 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+target 'PdfReaderExample' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+
+    # Resource bundle targets can retain a pod's obsolete iOS minimum.
+    minimum_ios_version = Gem::Version.new(min_ios_version_supported)
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |configuration|
+        deployment_target = configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if deployment_target.nil? || Gem::Version.new(deployment_target) < minimum_ios_version
+          configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = min_ios_version_supported
+        end
+      end
+    end
+
+    # Work around Apple Clang 21 consteval issues in `fmt` when compiling
+    # `FMT_STRING(...)` format strings (breaks `Pods/fmt/src/format.cc`).
+    #
+    # Building the `fmt` pod with C++17 disables fmt's consteval-based format
+    # string checks (`FMT_USE_CONSTEVAL=0`).
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'fmt'
+
+      target.build_configurations.each do |cfg|
+        # Force fmt to build with C++17 so it doesn't use `consteval`-based
+        # compile-time format string checking paths that currently break with
+        # Apple Clang 21 in Xcode 26.x.
+        cfg.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+
+        flags = cfg.build_settings['OTHER_CPLUSPLUSFLAGS']
+        flags = '$(inherited)' if flags.nil?
+
+        if flags.is_a?(Array)
+          flags << '-U__cpp_lib_is_constant_evaluated' unless flags.include?('-U__cpp_lib_is_constant_evaluated')
+        else
+          cfg.build_settings['OTHER_CPLUSPLUSFLAGS'] = "#{flags} -U__cpp_lib_is_constant_evaluated" unless flags.include?('-U__cpp_lib_is_constant_evaluated')
+        end
+      end
+    end
+  end
+end
