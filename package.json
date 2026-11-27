@@ -1,5 +1,5 @@
 {
-  "name": "@makit/react-native-pdf",
+  "name": "@makit-kit/react-native-pdf",
   "version": "0.1.0",
   "description": "Local-file PDF reader for React Native and Web",
   "license": "MIT",

@@ -21,7 +21,7 @@ Add the plugin to `app.json`:
 ```json
 {
   "expo": {
-    "plugins": ["@makit/react-native-pdf"]
+    "plugins": ["@makit-kit/react-native-pdf"]
   }
 }
 ```

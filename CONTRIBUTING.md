@@ -40,18 +40,43 @@ Never use private PDF files as public fixtures or screenshot content.
 
 ## Release
 
-1. Verify name/scope ownership and repository URLs; select a version.
-2. Run the checks above and native runtime checks on the supported platforms.
-3. Run `npm pack --dry-run`, inspect its allowlist, then `npm pack`.
-4. Install that exact tarball in a clean consuming app; verify Web and native linking.
-5. Authenticate with npm in your own terminal; run `npm publish ./package.tgz --access public`.
-6. Verify the published version before tagging the release and announcing it.
+The npm scope is `@makit-kit`. Releases are published by
+`.github/workflows/publish.yml` through npm Trusted Publishing (OIDC), without an
+npm token in GitHub secrets. A stable tag such as `v0.1.0` must match
+`package.json`, and its commit must already belong to `main`. The workflow runs
+all CI checks, builds/packs the package, then publishes the resulting archive.
+The owner reviews and merges changes before creating a release tag.
 
-Publishing is manual. CI does not contain an npm token or automatic publish action.
+### One-time npm setup
+
+For a new package, first publish the reviewed archive from your authenticated
+terminal, then configure **Trusted Publisher** in the package settings on npm:
+
+- Provider: GitHub Actions
+- Organization or user: `Maksym5248`
+- Repository: `makit-react-native-pdf`
+- Workflow filename: `publish.yml`
+- Environment: leave empty (the workflow does not use an environment)
+- Allowed actions: enable direct `npm publish`
+
+The first package/archive is prepared locally in `.verification/`:
+
+```sh
+npm login
+npm publish .verification/makit-kit-react-native-pdf-0.1.0.tgz --access public
+```
+
+Do not create a tag for an already published version: npm versions cannot be
+republished. For subsequent releases, update the version, review and merge the
+change, then push the matching `vX.Y.Z` tag. A newly configured trusted publisher
+must complete a successful publication within two days or be configured again.
+See [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/).
 
 ## Website
 
 `npm run build:site` creates `site-dist/`, including `/demo/`. Serve with
 `python3 -m http.server 8094 --directory site-dist`. Relative paths support repository
 subpaths on GitHub Pages. `.github/workflows/pages.yml` builds and deploys to the Pages
-environment once a public remote exists and Pages is enabled for GitHub Actions.
+environment automatically after a merge/push to `main`, or through a manual workflow dispatch.
+Repository Pages settings must use **GitHub Actions** as the source. Pull requests run
+validation without publishing the site.

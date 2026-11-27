@@ -8,7 +8,7 @@ import {
   openPdfSearch,
   type IPdfReaderRef,
   type IPdfSearchMatch,
-} from '@makit/react-native-pdf';
+} from '@makit-kit/react-native-pdf';
 import {
   ActivityIndicator,
   ScrollView,

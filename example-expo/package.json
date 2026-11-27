@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@makit/react-native-pdf": "file:..",
+    "@makit-kit/react-native-pdf": "file:..",
     "expo": "~55.0.32",
     "expo-dev-client": "~55.0.41",
     "expo-file-system": "~55.0.26",

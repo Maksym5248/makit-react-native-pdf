@@ -1,6 +1,6 @@
 {
   "extends": "../tsconfig.json",
-  "compilerOptions": { "paths": { "@makit/react-native-pdf": ["../src/index.ts"] } },
+  "compilerOptions": { "paths": { "@makit-kit/react-native-pdf": ["../src/index.ts"] } },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }

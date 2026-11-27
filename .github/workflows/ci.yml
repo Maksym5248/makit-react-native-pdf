@@ -1,8 +1,9 @@
 name: Checks
 on:
+  workflow_call:
   pull_request:
   push:
-    branches: [dev]
+    branches: [main]
 permissions:
   contents: read
 jobs:

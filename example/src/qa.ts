@@ -1,4 +1,4 @@
-import { openPdfSearch } from '@makit/react-native-pdf';
+import { openPdfSearch } from '@makit-kit/react-native-pdf';
 
 import { openFixture, releaseFile, saveQaReport } from './local-file';
 

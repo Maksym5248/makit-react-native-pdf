@@ -12,7 +12,7 @@
       "package": "dev.maxkostin.pdfreaderexpo"
     },
     "plugins": [
-      "@makit/react-native-pdf",
+      "@makit-kit/react-native-pdf",
       "./plugins/with-ios-scene.cjs"
     ]
   }

@@ -9,7 +9,7 @@ module.exports = {
     extensions: ['.web.tsx', '.web.ts', '.web.js', '.tsx', '.ts', '.js'],
     alias: {
       'react-native$': require.resolve('react-native-web'),
-      '@makit/react-native-pdf$': path.resolve(__dirname, '../src/index.ts'),
+      '@makit-kit/react-native-pdf$': path.resolve(__dirname, '../src/index.ts'),
     },
   },
   module: { rules: [
