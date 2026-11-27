@@ -1,6 +1,6 @@
 {
   "name": "@makit-kit/react-native-pdf",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local-file PDF reader for React Native and Web",
   "license": "MIT",
   "main": "lib/module/index.js",

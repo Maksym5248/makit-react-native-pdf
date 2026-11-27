@@ -76,7 +76,7 @@ export function App() {
   const [reportedScale, setReportedScale] = useState(1);
   const [singlePage, setSinglePage] = useState(false);
   const [status, setStatus] = useState(
-    'Виберіть локальний PDF або тестовий файл',
+    'Choose a local PDF or open the sample',
   );
   const openedAt = useRef<number | undefined>(undefined);
   useEffect(
@@ -89,7 +89,7 @@ export function App() {
     setRevision(value => value + 1);
     setPage(1);
     setTotal(0);
-    setStatus('Відкриття…');
+    setStatus('Opening…');
     openedAt.current = performance.now();
     setUri(next);
     setPanel(null);
@@ -111,7 +111,7 @@ export function App() {
         .catch(error => {
           if (!cancelled)
             setStatus(
-              error instanceof Error ? error.message : 'Помилка документа',
+              error instanceof Error ? error.message : 'Document error',
             );
         });
     }
@@ -132,7 +132,7 @@ export function App() {
         .catch(error => {
           if (!cancelled)
             setStatus(
-              error instanceof Error ? error.message : 'Помилка метаданих',
+              error instanceof Error ? error.message : 'Metadata error',
             );
         });
     return () => {
@@ -147,7 +147,7 @@ export function App() {
     if (!document || !query.trim()) return;
     const timer = setTimeout(async () => {
       const started = performance.now();
-      setSearchStatus('Пошук…');
+      setSearchStatus('Searching…');
       try {
         let found: IPdfSearchMatch[] = [];
         let hasText = false;
@@ -161,21 +161,21 @@ export function App() {
           limited = limited || result.truncated || found.length >= 2000;
           setMatches(found);
           setSearchStatus(
-            `Пошук ${pageNumber}/${document.pages} · ${found.length} збігів`,
+            `Search ${pageNumber}/${document.pages} · ${found.length} matches`,
           );
           if (found.length >= 2000) break;
         }
         setSearchStatus(
           hasText
-            ? `${found.length} збігів за ${Math.round(
+            ? `${found.length} matches in ${Math.round(
                 performance.now() - started,
-              )} мс${limited ? ' (досягнуто ліміт)' : ''}`
-            : 'Документ не має текстового шару',
+              )} ms${limited ? ' (limit reached)' : ''}`
+            : 'This PDF has no text layer',
         );
       } catch (error) {
         if (!cancelled)
           setSearchStatus(
-            error instanceof Error ? error.message : 'Помилка пошуку',
+            error instanceof Error ? error.message : 'Search error',
           );
       }
     }, 200);
@@ -205,7 +205,7 @@ export function App() {
     } catch (error) {
       setPanel('files');
       setStatus(
-        error instanceof Error ? error.message : 'Помилка локального файла',
+        error instanceof Error ? error.message : 'Local file error',
       );
     }
   };
@@ -247,19 +247,19 @@ export function App() {
             pointerEvents={toolsVisible ? 'auto' : 'none'}
             style={[styles.toolbar, { opacity: toolsVisible ? 1 : 0 }]}
           >
-            <Button title="Файл" onPress={() => togglePanel('files')} />
+            <Button title="File" onPress={() => togglePanel('files')} />
             <Button
-              title="Пошук"
+              title="Search"
               disabled={!uri}
               onPress={() => togglePanel('search')}
             />
             <Button
-              title="Сторінки"
+              title="Pages"
               disabled={!document}
               onPress={() => togglePanel('pages')}
             />
             <Button
-              title="Вигляд"
+              title="View"
               disabled={!uri}
               onPress={() => togglePanel('settings')}
             />
@@ -272,7 +272,7 @@ export function App() {
               renderLoading={() => (
                 <View>
                   <ActivityIndicator size="large" />
-                  <Text>Відкриваємо PDF…</Text>
+                  <Text>Opening PDF…</Text>
                 </View>
               )}
               highlightContentInsets={{
@@ -312,9 +312,9 @@ export function App() {
                 setTotal(count);
                 if (openedAt.current !== undefined) {
                   setStatus(
-                    `Відкрито ${count} стор. за ${Math.round(
+                    `Opened ${count} pages in ${Math.round(
                       performance.now() - openedAt.current,
-                    )} мс`,
+                    )} ms`,
                   );
                   openedAt.current = undefined;
                 }
@@ -328,10 +328,10 @@ export function App() {
           ) : (
             <View style={[styles.reader, styles.emptyState]}>
               <Text style={styles.eyebrow}>MAKIT · PDF READER</Text>
-              <Text style={styles.emptyTitle}>Простір для читання.</Text>
+              <Text style={styles.emptyTitle}>Open a PDF</Text>
               <Text style={styles.emptyDescription}>
-                Відкрийте свій PDF або синтетичний приклад. Файл залишається на
-                вашому пристрої.
+                Choose your own document or try the sample PDF. Your file stays on
+                your device.
               </Text>
             </View>
           )}
@@ -353,7 +353,7 @@ export function App() {
               ]}
             >
               <Button
-                title="Попередня"
+                title="Previous"
                 disabled={page <= 1}
                 onPress={() => reader.current?.setPage(page - 1)}
               />
@@ -361,7 +361,7 @@ export function App() {
                 {page} / {total}
               </Text>
               <Button
-                title="Наступна"
+                title="Next"
                 disabled={page >= total}
                 onPress={() => reader.current?.setPage(page + 1)}
               />
@@ -389,15 +389,15 @@ export function App() {
                 <Text style={styles.title}>
                   {
                     {
-                      files: 'Відкрити PDF',
-                      search: 'Пошук у книзі',
-                      pages: 'Сторінки',
-                      settings: 'Вигляд і дані',
+                      files: 'Open PDF',
+                      search: 'Find in document',
+                      pages: 'Pages',
+                      settings: 'View settings',
                     }[panel]
                   }
                 </Text>
                 <Button
-                  title="Сховати"
+                  title="Hide"
                   onPress={() => {
                     Keyboard.dismiss();
                     setPanel(null);
@@ -434,7 +434,7 @@ export function App() {
                           title="Run renderer checks"
                           onPress={() => setRendererChecks(true)}
                         />
-                        <Button title="Тестовий PDF" onPress={fixture} />
+                        <Button title="Sample PDF" onPress={fixture} />
                         <Button
                           title="Compare renderers"
                           disabled={!uri || qaRunning}
@@ -462,11 +462,11 @@ export function App() {
                           onPress={runChecks}
                         />
                         <Button
-                          title="Закрити"
+                          title="Close"
                           onPress={() => {
                             setUri('');
                             setTotal(0);
-                            setStatus('Документ закрито');
+                            setStatus('Document closed');
                           }}
                         />
                         <FilePicker onOpen={open} />
@@ -478,14 +478,14 @@ export function App() {
                     <>
                       <View style={styles.controls}>
                         <TextInput
-                          accessibilityLabel="Пошук у PDF"
-                          placeholder="Пошук: alpha або книга"
+                          accessibilityLabel="Search PDF"
+                          placeholder="Search for a word"
                           value={query}
                           onChangeText={setQuery}
                           style={styles.query}
                         />
                         <Button
-                          title="← Збіг"
+                          title="← Match"
                           disabled={activeMatch <= 0}
                           onPress={() => selectMatch(activeMatch - 1)}
                         />
@@ -493,7 +493,7 @@ export function App() {
                           {activeMatch + 1}/{matches.length}
                         </Text>
                         <Button
-                          title="Збіг →"
+                          title="Match →"
                           disabled={activeMatch + 1 >= matches.length}
                           onPress={() => selectMatch(activeMatch + 1)}
                         />
@@ -519,7 +519,7 @@ export function App() {
                             setScale(value => Math.min(3, value + 0.2))
                           }
                         />
-                        <Text>Одна сторінка</Text>
+                        <Text>Single page</Text>
                         <Switch
                           accessibilityLabel="Single page"
                           value={singlePage}
@@ -527,20 +527,20 @@ export function App() {
                         />
                       </View>
                       <View style={styles.controls}>
-                        <Text>Горизонтально</Text>
+                        <Text>Horizontal</Text>
                         <Switch
                           accessibilityLabel="Horizontal"
                           value={horizontal}
                           onValueChange={setHorizontal}
                         />
-                        <Text>Посторінково</Text>
+                        <Text>Paging</Text>
                         <Switch
                           accessibilityLabel="Paging"
                           value={paging}
                           onValueChange={setPaging}
                         />
                         <Button
-                          title={`Поворот ${rotation}°`}
+                          title={`Rotation ${rotation}°`}
                           onPress={() =>
                             setRotation(value => {
                               if (value === 0) return 90;
@@ -552,7 +552,7 @@ export function App() {
                         />
                         <Button
                           title={
-                            fitPolicy === 0 ? 'За шириною' : 'Уся сторінка'
+                            fitPolicy === 0 ? 'Fit width' : 'Fit page'
                           }
                           onPress={() => {
                             setFitPolicy(value => (value === 0 ? 2 : 0));
@@ -564,9 +564,9 @@ export function App() {
                       {pageInfo && (
                         <Text>
                           {Math.round(pageInfo.width)} ×{' '}
-                          {Math.round(pageInfo.height)} pt · поворот файла{' '}
-                          {pageInfo.rotation}° · текстовий шар:{' '}
-                          {pageInfo.hasText ? 'так' : 'ні'}
+                          {Math.round(pageInfo.height)} pt · file rotation{' '}
+                          {pageInfo.rotation}° · text layer:{' '}
+                          {pageInfo.hasText ? 'yes' : 'no'}
                         </Text>
                       )}
                     </>

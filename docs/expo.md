@@ -9,11 +9,11 @@ the package does not claim that every newer React Native version has been tested
 
 ## Existing application
 
-Install the library tarball (or its package name after publication), then matching Expo dependencies:
+Install the reader and Expo development client in your application.
 
 ```sh
 npx expo install expo-dev-client
-npm install /absolute/path/to/reader-package.tgz
+npm install @makit-kit/react-native-pdf
 ```
 
 Add the plugin to `app.json`:
@@ -55,9 +55,8 @@ npm run android --workspace pdf-reader-expo-example
 npm run start --workspace pdf-reader-expo-example
 ```
 
-Choose PDF uses `expo-document-picker` with `copyToCacheDirectory: true` so the reader
-gets an accessible local URI. The synthetic sample is written to the example's own
-Documents directory using `expo-file-system`. Neither operation uploads a document.
+**Open PDF** uses `expo-document-picker` with `copyToCacheDirectory: true` so the reader
+gets an accessible local URI. The bundled guide opens through `expo-asset` as a local file. Neither operation uploads a document.
 File selection/storage belongs to this example, not to the library.
 
 The Web demo uses Webpack and local workers, as documented in the main README.

@@ -3,7 +3,7 @@ import React from 'react';
 export function FilePicker({ onOpen }: { onOpen: (uri: string) => void }) {
   return (
     <input
-      aria-label="Вибрати локальний PDF"
+      aria-label="Choose local PDF"
       type="file"
       accept="application/pdf"
       onChange={event => {

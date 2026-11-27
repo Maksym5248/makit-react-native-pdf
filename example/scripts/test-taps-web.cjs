@@ -11,9 +11,9 @@ const assert = require('node:assert/strict');
     });
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
-    await page.goto('http://127.0.0.1:8093');
+    await page.goto('http://127.0.0.1:8093/?checks');
     await page
-      .getByRole('button', { name: 'Тестовий PDF', exact: true })
+      .getByRole('button', { name: 'Sample PDF', exact: true })
       .click();
     await page.getByText('1 / 3', { exact: true }).waitFor();
     const pdf = page.locator('.react-pdf__Page').first();

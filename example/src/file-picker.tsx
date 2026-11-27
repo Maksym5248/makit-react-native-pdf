@@ -10,12 +10,12 @@ export function FilePicker({ onOpen }: { onOpen: (uri: string) => void }) {
     <View>
       <TextInput
         accessibilityLabel="Local PDF path"
-        placeholder="file:///… або content://…"
+        placeholder="file:///… or content://…"
         value={uri}
         onChangeText={setUri}
         autoCapitalize="none"
       />
-      <Button title="Відкрити локальний URI" onPress={() => onOpen(uri)} />
+      <Button title="Open local URI" onPress={() => onOpen(uri)} />
     </View>
   );
 }
