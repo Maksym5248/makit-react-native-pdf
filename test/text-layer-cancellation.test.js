@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { act, create } from 'react-test-renderer';
-import TextLayer from '../../../node_modules/react-pdf/dist/cjs/Page/TextLayer';
+import TextLayer from '../node_modules/react-pdf/dist/cjs/Page/TextLayer';
 
 let mockContext;
 const mockTasks = [];
@@ -15,7 +15,7 @@ jest.mock('pdfjs-dist', () => ({
         cancel() { this.reject(Object.assign(new Error('TextLayer task cancelled.'), { name: 'AbortException' })); }
     },
 }));
-jest.mock('../../../node_modules/react-pdf/dist/cjs/shared/hooks/usePageContext', () => ({
+jest.mock('../node_modules/react-pdf/dist/cjs/shared/hooks/usePageContext', () => ({
     __esModule: true, default: () => mockContext,
 }));
 global.IS_REACT_ACT_ENVIRONMENT = true;

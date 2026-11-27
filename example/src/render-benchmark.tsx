@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   PdfReader,
   type IPdfReaderRef,
-} from '@maksym5248/react-native-pdf-reader';
+} from '@makit/react-native-pdf';
 import { Text, View } from 'react-native';
 import LegacyPdf, { type PdfRef } from 'react-native-pdf';
 

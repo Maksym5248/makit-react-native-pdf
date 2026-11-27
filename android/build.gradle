@@ -1,4 +1,4 @@
-description = '@maksym5248/react-native-pdf-reader'
+description = '@makit/react-native-pdf'
 
 buildscript {
     ext.safeExtGet = { prop, fallback ->

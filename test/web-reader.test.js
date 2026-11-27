@@ -46,8 +46,9 @@ test('scrolling updates current page without snapping back to its top', async ()
     const onPageChanged = jest.fn();
     await mount({ sourceUri: 'blob:https://ammo.test/book', onPageChanged });
     await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
+    tree.root.findAllByType('div').find(element => element.props.onWheel).props.onWheel();
     container.scrollTop = 1000;
-    await act(() => observer([{ isIntersecting: true, intersectionRatio: 0.8, target: { getAttribute: () => '2' } }]));
+    await act(() => observer([{ isIntersecting: true, intersectionRatio: 0.8, intersectionRect: { width: 600, height: 640 }, target: { getAttribute: () => '2' } }]));
     expect(onPageChanged).toHaveBeenLastCalledWith(2, 8);
     expect(container.scrollTop).toBe(1000);
 });
@@ -102,7 +103,8 @@ test('changing reading direction keeps the page reached by scrolling', async () 
     const props = { sourceUri: 'blob:https://ammo.test/book' };
     await mount(props);
     await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
-    await act(() => observer([{ isIntersecting: true, intersectionRatio: 0.8, target: { getAttribute: () => '4' } }]));
+    tree.root.findAllByType('div').find(element => element.props.onWheel).props.onWheel();
+    await act(() => observer([{ isIntersecting: true, intersectionRatio: 0.8, intersectionRect: { width: 600, height: 640 }, target: { getAttribute: () => '4' } }]));
     await act(() => tree.update(React.createElement(PdfReader, { ...props, horizontal: true })));
     expect(container.scrollLeft).toBe(1830);
 });
@@ -182,6 +184,7 @@ test('reveals an active search match inside the PDF viewport without scrolling t
     await act(() => page.props.onRenderTextLayerSuccess());
     expect(container.scrollTop).toBe(1100);
     expect(container.scrollLeft).toBe(0);
+    tree.root.findAllByType('div').find(element => element.props.onWheel).props.onWheel();
     container.scrollTop = 1000;
     await act(() => page.props.onRenderTextLayerSuccess());
     expect(container.scrollTop).toBe(1000);
@@ -210,4 +213,62 @@ test('reveals an active match at the requested top inset without changing PDF la
     await act(() => tree.root.findAllByType(PdfPage)[0].props.onActiveMatch(match));
     expect(container.scrollTop).toBe(330);
     expect(container.scrollLeft).toBe(0);
+});
+
+test('a late highlight render cannot override an explicit page command', async () => {
+    const ref = React.createRef();
+    const match = { page: 1, start: 0, length: 5, text: 'alpha', rects: [] };
+    const props = { sourceUri: 'blob:https://reader.test/navigation', ref, highlights: [match], activeMatch: 0 };
+    await mount(props);
+    await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
+    container.getBoundingClientRect = () => ({ top: 100, bottom: 900, left: 0, right: 600, width: 600, height: 800 });
+    const activeElement = { getBoundingClientRect: () => ({ top: 1200, bottom: 1220, left: 20, right: 100, width: 80, height: 20 }) };
+    const delayedReveal = tree.root.findAllByType(PdfPage)[0].props.onActiveMatch;
+    await act(() => ref.current.setPage(2));
+    expect(container.scrollTop).toBe(810);
+    await act(() => delayedReveal(activeElement));
+    expect(container.scrollTop).toBe(810);
+
+    // A newly selected match may still reveal itself normally.
+    await act(() => tree.update(React.createElement(PdfReader, { ...props, highlights: [{ ...match, start: 6 }] })));
+    await act(() => tree.root.findAllByType(PdfPage)[0].props.onActiveMatch(activeElement));
+    expect(container.scrollTop).toBeGreaterThan(810);
+});
+
+
+test('a small fully visible neighbouring page does not replace the larger visible page', async () => {
+    const onPageChanged = jest.fn();
+    await mount({ sourceUri: 'blob:https://reader.test/mixed-pages', onPageChanged });
+    await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
+    tree.root.findAllByType('div').find(element => element.props.onWheel).props.onWheel();
+    await act(() => observer([
+        { isIntersecting: true, intersectionRatio: 0.7, intersectionRect: { width: 600, height: 560 }, target: { getAttribute: () => '2' } },
+        { isIntersecting: true, intersectionRatio: 1, intersectionRect: { width: 200, height: 150 }, target: { getAttribute: () => '3' } },
+    ]));
+    expect(onPageChanged).toHaveBeenLastCalledWith(2, 8);
+});
+
+
+test('keeps the requested page aligned when asynchronous page sizes arrive', async () => {
+    const ref = React.createRef();
+    await mount({ sourceUri: 'blob:https://reader.test/page-layout', ref });
+    await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
+    await act(() => ref.current.setPage(2));
+    container.scrollTop = 200;
+    await act(() => tree.root.findAllByType(PdfPage)[0].props.onSize(800, 600));
+    expect(container.scrollTop).toBe(810);
+});
+
+
+test('layout visibility cannot replace an explicit page command before user scrolling', async () => {
+    const ref = React.createRef();
+    const onPageChanged = jest.fn();
+    await mount({ sourceUri: 'blob:https://reader.test/command-layout', ref, onPageChanged });
+    await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
+    await act(() => ref.current.setPage(2));
+    await act(() => observer([{ isIntersecting: true, intersectionRatio: 1, intersectionRect: { width: 600, height: 800 }, target: { getAttribute: () => '3' } }]));
+    expect(onPageChanged).toHaveBeenLastCalledWith(2, 8);
+    tree.root.findAllByType('div').find(element => element.props.onWheel).props.onWheel();
+    await act(() => observer([{ isIntersecting: true, intersectionRatio: 1, intersectionRect: { width: 600, height: 800 }, target: { getAttribute: () => '3' } }]));
+    expect(onPageChanged).toHaveBeenLastCalledWith(3, 8);
 });

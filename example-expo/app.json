@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "PDF Reader",
+    "slug": "pdf-reader-example",
+    "version": "1.0.0",
+    "orientation": "default",
+    "ios": {
+      "bundleIdentifier": "dev.maxkostin.pdfreaderexpo",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "dev.maxkostin.pdfreaderexpo"
+    },
+    "plugins": [
+      "@makit/react-native-pdf",
+      "./plugins/with-ios-scene.cjs"
+    ]
+  }
+}

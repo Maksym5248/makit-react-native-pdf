@@ -5,7 +5,7 @@ import {
   openPdfSearch,
   type IPdfReaderProps,
   type IPdfReaderRef,
-} from '@maksym5248/react-native-pdf-reader';
+} from '@makit/react-native-pdf';
 import { Text, View } from 'react-native';
 
 import { Button } from './button';
@@ -28,13 +28,13 @@ export function RendererChecks({ onClose }: { onClose: () => void }) {
     let total = 0;
     let loads = 0;
     let errors = 0;
-    const waitFor = async (condition: () => boolean) => {
+    const waitFor = async (condition: () => boolean, step = '') => {
       const deadline = Date.now() + 10000;
       while (!condition()) {
         if (cancelled) throw new Error('Cancelled');
         if (Date.now() > deadline)
           throw new Error(
-            `Timeout: page=${lastPage}, total=${total}, loads=${loads}, errors=${errors}`,
+            `Timeout ${step}: page=${lastPage}, total=${total}, loads=${loads}, errors=${errors}`,
           );
         await new Promise(resolve => setTimeout(resolve, 50));
       }
@@ -95,7 +95,6 @@ export function RendererChecks({ onClose }: { onClose: () => void }) {
             await waitFor(() => loads > 0 && lastPage === 1);
             const rotations: Array<0 | 90 | 180 | 270> = [90, 180, 270, 0];
             for (const rotation of rotations) {
-              const previousLoads = loads;
               setFrame(
                 current =>
                   current && {
@@ -110,7 +109,13 @@ export function RendererChecks({ onClose }: { onClose: () => void }) {
                     },
                   },
               );
-              await waitFor(() => loads > previousLoads && lastPage === 1);
+              // Rotation/viewport changes keep the same document open. They do not
+              // promise another onLoadComplete callback; verify navigation instead.
+              await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+              reader.current?.setPage(2);
+              await waitFor(() => lastPage === 2, `rotation ${rotation}, page 2`);
+              reader.current?.setPage(1);
+              await waitFor(() => lastPage === 1, `rotation ${rotation}, page 1`);
             }
             reader.current?.setPage(2);
             await waitFor(() => lastPage === 2);

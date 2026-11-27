@@ -1,0 +1,30 @@
+{
+  "name": "pdf-reader-expo-example",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "prebuild": "expo prebuild --no-install",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@makit/react-native-pdf": "file:..",
+    "expo": "~55.0.32",
+    "expo-dev-client": "~55.0.41",
+    "expo-file-system": "~55.0.26",
+    "expo-document-picker": "~55.0.17",
+    "react": "19.2.0",
+    "react-native": "0.83.10",
+    "react-native-safe-area-context": "~5.6.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "typescript": "~5.9.2"
+  },
+  "engines": {
+    "node": ">=20.19.4"
+  }
+}

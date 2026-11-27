@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { PDFDocumentProxy, PDFWorker } from 'pdfjs-dist';
 import { StyleSheet, View } from 'react-native';
@@ -11,6 +11,7 @@ import { clampPage, clampScale, isLocalPdfUri } from './document';
 import { PdfLoading } from './pdf-loading';
 import { PdfPage } from './pdf-page.web';
 import type { IPdfOutline, IPdfReaderProps, IPdfReaderRef } from './pdf-reader.types';
+import type { IPdfSearchMatch } from './search.types';
 
 // Bundled by the consuming application: no CDN request while reading offline.
 const workerSource = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
@@ -45,6 +46,9 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
     }, []);
     const requestedPage = useRef(clampPage(props.page ?? 1));
     const previousPageProp = useRef(props.page);
+    const commandedPage = useRef<number | undefined>(undefined);
+    const releasePageCommand = () => { commandedPage.current = undefined; };
+    const ignoredActiveMatch = useRef<IPdfSearchMatch | undefined>(undefined);
     const [worker, setWorker] = useState<PDFWorker>();
     const documentOptions = useMemo(() => ({ ...options, worker, password: props.password }), [worker, props.password]);
     const [document, setDocument] = useState<PDFDocumentProxy>();
@@ -108,6 +112,9 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
     const jump = useCallback(
         (page: number) => {
             const next = clampPage(page, total);
+            const selectedMatch = callbacks.current.highlights?.[callbacks.current.activeMatch ?? -1];
+            ignoredActiveMatch.current = selectedMatch && selectedMatch.page !== next ? selectedMatch : undefined;
+            commandedPage.current = next;
             requestedPage.current = next;
             setCurrent(next);
             setVisiblePages(new Set([next - 1, next, next + 1]));
@@ -143,18 +150,19 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
 
     useEffect(() => {
         if (!container.current || single || !total) return;
+        // Compare visible area: a tiny fully visible page must not outweigh a larger page.
         const visibility = new Map<number, number>();
         const observer = new IntersectionObserver(
             entries => {
                 for (const entry of entries) {
                     const page = Number(entry.target.getAttribute('data-page-number'));
-                    if (entry.isIntersecting) visibility.set(page, entry.intersectionRatio);
+                    if (entry.isIntersecting) visibility.set(page, entry.intersectionRect.width * entry.intersectionRect.height);
                     else visibility.delete(page);
                 }
                 const visible = [...visibility.keys()];
                 if (!visible.length) return;
                 const best = [...visibility].sort((a, b) => b[1] - a[1])[0];
-                if (best) {
+                if (best && commandedPage.current === undefined) {
                     requestedPage.current = best[0];
                     setCurrent(best[0]);
                 }
@@ -175,6 +183,10 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
     useEffect(() => {
         if (total) jump(requestedPage.current);
     }, [props.rotation, props.fitPolicy, props.enablePaging, props.enableRTL, jump, total]);
+
+    useLayoutEffect(() => {
+        if (total) jump(requestedPage.current);
+    }, [pageRatios, size.width, size.height, scale, jump, total]);
 
     const onLoad = async (pdf: PDFDocumentProxy) => {
         try {
@@ -206,6 +218,9 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
     const insetRight = Math.max(0, props.highlightContentInsets?.right ?? 0);
     const revealMatch = useCallback(
         (element: HTMLElement) => {
+            const selectedMatch = callbacks.current.highlights?.[callbacks.current.activeMatch ?? -1];
+            // A late text-layer render must not undo a page command issued after it started.
+            if (selectedMatch && selectedMatch === ignoredActiveMatch.current) return;
             const viewport = container.current;
             if (!viewport) return;
             const bounds = viewport.getBoundingClientRect();
@@ -246,6 +261,10 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
         <View style={[styles.document, props.style]}>
             <div
                 ref={container}
+                onWheel={releasePageCommand}
+                onTouchMove={releasePageCommand}
+                onPointerDown={releasePageCommand}
+                onKeyDown={releasePageCommand}
                 onDoubleClick={event => {
                     if (event.target instanceof Element && event.target.closest('a, button, input, textarea, select')) return;
                     if (props.enableDoubleTapZoom === false || single) return;
@@ -270,6 +289,7 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
                     overflowX: props.scrollEnabled === false ? 'hidden' : 'auto',
                     scrollSnapType: props.enablePaging && !single ? `${horizontal ? 'x' : 'y'} mandatory` : undefined,
                     overscrollBehavior: 'contain',
+                    overflowAnchor: 'none',
                     direction: 'ltr',
                 }}
             >

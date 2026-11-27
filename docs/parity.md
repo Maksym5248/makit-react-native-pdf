@@ -1,8 +1,9 @@
 # Reader capability matrix
 
-Compared with the installed react-native-pdf 7.0.4 public `PdfProps` / `PdfRef`
-and Ammo's `components/reader/pdf-viewer` contract. This is a renderer API,
-not a replacement for Ammo's download/cache, bookmarks, persistence or navigation.
+The API is compared with react-native-pdf 7.0.4. File downloads, caching,
+bookmarks, persistence and application navigation belong to the consumer.
+This matrix describes the inherited contract and regression scenarios;
+it is not fresh native certification of the standalone/Expo build.
 
 | Capability | iOS / Android | Web | Evidence / boundary |
 | --- | --- | --- | --- |
@@ -41,13 +42,14 @@ indices otherwise start at 1. Search offsets/geometry are engine-local, not a
 cross-platform persistence format. No OCR, PDF editing, form persistence,
 annotation authoring or document synchronization is claimed.
 
-## Verified scope
+## Validation boundaries
 
-Native: React Native 0.83.1 New Architecture, React 19.2, iOS 27 simulators and
-Android API 35 arm64 emulator. Web: local Chromium headless, production consumer
-bundle and development example. Build/codegen checks do not certify every older
-OS, ABI, browser or React Native version. Peer ranges specify the minimum API
-baseline; the example is the tested configuration. Real-device release FPS,
-thermal behavior and accessibility with a screen reader are not certified by
-these simulator tests. Numerical performance evidence is in the example's
-`e2e/performance.md`; short memory samples do not prove absence of every leak.
+The original implementation was exercised with React Native 0.83.1 New Architecture,
+React 19.2, iOS simulators and an Android arm64 emulator. The standalone and Expo
+examples use React Native 0.83.10. New build/runtime results must be recorded separately;
+previous simulator evidence does not verify this copy or Expo.
+
+Build/codegen checks do not certify every OS, ABI, browser or React Native version.
+Peer ranges express the API baseline, not a tested compatibility matrix for all versions.
+Real-device release FPS, thermal behavior, screen-reader usability and absence of all
+memory leaks are not implied by simulator or mock tests.

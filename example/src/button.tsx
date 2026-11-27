@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Platform, Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
 interface Props {
   title: string;
@@ -8,17 +8,9 @@ interface Props {
   onPress: () => void;
 }
 
-// Keep enabled/disabled colors explicit: removing RN Button's disabled style
-// can leave its Android text/view with the previous native color.
 export function Button({ title, disabled = false, onPress }: Props) {
-  const android = Platform.OS === 'android';
-  let backgroundColor = 'transparent';
-  let color = '#007aff';
-  if (android) {
-    backgroundColor = disabled ? '#dfdfdf' : '#2196f3';
-    color = '#ffffff';
-  }
-  if (disabled) color = '#767676';
+  const backgroundColor = disabled ? '#edf0ee' : '#e3ece6';
+  const color = disabled ? '#64746a' : '#254b35';
   return (
     <Pressable
       accessibilityRole="button"
@@ -34,13 +26,13 @@ export function Button({ title, disabled = false, onPress }: Props) {
       ]}
     >
       <Text style={[styles.text, { color }]}>
-        {android ? title.toUpperCase() : title}
+        {title}
       </Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: { borderRadius: 2, minHeight: 44, justifyContent: 'center' },
-  text: { textAlign: 'center', margin: 8, fontSize: 14, fontWeight: '500' },
+  button: { borderRadius: 12, minHeight: 44, justifyContent: 'center', paddingHorizontal: 4 },
+  text: { textAlign: 'center', margin: 10, fontSize: 14, fontWeight: '600' },
 });
