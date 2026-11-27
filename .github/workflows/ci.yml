@@ -1,0 +1,42 @@
+name: Checks
+on:
+  pull_request:
+  push:
+    branches: [dev]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run patch:web
+      - run: npm test
+      - run: npm run test:expo
+      - run: npm run test:patches
+      - run: npm run typecheck
+      - run: npm run typecheck:example
+      - run: npm run typecheck:expo
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test:web-build
+      - run: npm run build:site
+      - run: npm run test:package
+      - run: npx playwright install --with-deps chromium
+      - name: Browser regression checks
+        run: |
+          python3 -m http.server 8093 --bind 127.0.0.1 --directory site-dist/demo > /tmp/makit-web-server.log 2>&1 &
+          curl --retry 10 --retry-connrefused --retry-delay 1 --fail http://127.0.0.1:8093/ > /dev/null
+          npm run test:web --workspace pdf-reader-example
+          npm run test:web-taps --workspace pdf-reader-example
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-check-evidence
+          path: example/e2e/artifacts
+          if-no-files-found: ignore

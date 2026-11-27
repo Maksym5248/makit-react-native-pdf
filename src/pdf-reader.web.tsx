@@ -11,6 +11,7 @@ import { clampPage, clampScale, isLocalPdfUri } from './document';
 import { PdfLoading } from './pdf-loading';
 import { PdfPage } from './pdf-page.web';
 import type { IPdfOutline, IPdfReaderProps, IPdfReaderRef } from './pdf-reader.types';
+import type { IPdfSearchMatch } from './search.types';
 
 // Bundled by the consuming application: no CDN request while reading offline.
 const workerSource = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
@@ -45,6 +46,7 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
     }, []);
     const requestedPage = useRef(clampPage(props.page ?? 1));
     const previousPageProp = useRef(props.page);
+    const ignoredActiveMatch = useRef<IPdfSearchMatch | undefined>(undefined);
     const [worker, setWorker] = useState<PDFWorker>();
     const documentOptions = useMemo(() => ({ ...options, worker, password: props.password }), [worker, props.password]);
     const [document, setDocument] = useState<PDFDocumentProxy>();
@@ -108,6 +110,8 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
     const jump = useCallback(
         (page: number) => {
             const next = clampPage(page, total);
+            const selectedMatch = callbacks.current.highlights?.[callbacks.current.activeMatch ?? -1];
+            ignoredActiveMatch.current = selectedMatch && selectedMatch.page !== next ? selectedMatch : undefined;
             requestedPage.current = next;
             setCurrent(next);
             setVisiblePages(new Set([next - 1, next, next + 1]));
@@ -206,6 +210,9 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
     const insetRight = Math.max(0, props.highlightContentInsets?.right ?? 0);
     const revealMatch = useCallback(
         (element: HTMLElement) => {
+            const selectedMatch = callbacks.current.highlights?.[callbacks.current.activeMatch ?? -1];
+            // A late text-layer render must not undo a page command issued after it started.
+            if (selectedMatch && selectedMatch === ignoredActiveMatch.current) return;
             const viewport = container.current;
             if (!viewport) return;
             const bounds = viewport.getBoundingClientRect();

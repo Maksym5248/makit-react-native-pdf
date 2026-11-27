@@ -8,7 +8,7 @@ import {
   openPdfSearch,
   type IPdfReaderRef,
   type IPdfSearchMatch,
-} from '@maksym5248/react-native-pdf-reader';
+} from '@makit/react-native-pdf';
 import {
   ActivityIndicator,
   ScrollView,
@@ -18,6 +18,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -30,6 +31,7 @@ import { RenderBenchmark } from './render-benchmark';
 import { RendererChecks } from './renderer-checks';
 
 export function App() {
+  const compact = useWindowDimensions().width < 600;
   const [renderBenchmark, setRenderBenchmark] = useState(false);
   const [rendererChecks, setRendererChecks] = useState(false);
   const [qaRunning, setQaRunning] = useState(false);
@@ -51,6 +53,10 @@ export function App() {
     setPanel(current => (current === next ? null : next));
   };
   const [toolsVisible, setToolsVisible] = useState(true);
+  const [toolbarHeight, setToolbarHeight] = useState(64);
+  const [pageControlsHeight, setPageControlsHeight] = useState(64);
+  const [panelLayout, setPanelLayout] = useState({ top: 0, bottom: 0 });
+  const [viewportHeight, setViewportHeight] = useState(0);
   const reader = useRef<IPdfReaderRef>(null);
   const [document, setDocument] = useState<IPdfSearchDocument>();
   const [pageInfo, setPageInfo] = useState<IPdfPageInfo>();
@@ -184,8 +190,15 @@ export function App() {
     setActiveMatch(index);
     reader.current?.setPage(match.page);
   };
-  const pageMatches = matches.filter(match => match.page === page);
-  const activePageMatch = pageMatches.indexOf(matches[activeMatch]);
+  const selectedMatch = matches[activeMatch];
+  const readerHighlights = matches.filter(match => match.page === page);
+  // A viewport can contain parts of two pages. Keep the selected result visible
+  // even when the page counter follows the other page, within the native cap.
+  if (selectedMatch && !readerHighlights.includes(selectedMatch)) {
+    if (readerHighlights.length === 256) readerHighlights.pop();
+    readerHighlights.push(selectedMatch);
+  }
+  const activeHighlightIndex = readerHighlights.indexOf(selectedMatch);
   const fixture = async () => {
     try {
       open(await openFixture());
@@ -218,8 +231,14 @@ export function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.screen}>
-        <View style={styles.screen}>
+        <View
+          style={styles.screen}
+          onLayout={event => setViewportHeight(event.nativeEvent.layout.height)}
+        >
           <View
+            onLayout={event =>
+              setToolbarHeight(event.nativeEvent.layout.height)
+            }
             testID="example.toolbar"
             accessibilityElementsHidden={!toolsVisible}
             importantForAccessibility={
@@ -256,8 +275,23 @@ export function App() {
                   <Text>Відкриваємо PDF…</Text>
                 </View>
               )}
-              highlights={pageMatches}
-              activeMatch={activePageMatch}
+              highlightContentInsets={{
+                top: toolsVisible
+                  ? panel === 'search' && !compact
+                    ? Math.max(toolbarHeight, panelLayout.bottom) + 12
+                    : toolbarHeight + 12
+                  : 0,
+                bottom: toolsVisible
+                  ? panel === 'search' && compact
+                    ? Math.max(
+                        pageControlsHeight,
+                        viewportHeight - panelLayout.top,
+                      ) + 12
+                    : pageControlsHeight
+                  : 0,
+              }}
+              highlights={readerHighlights}
+              activeMatch={activeHighlightIndex}
               scale={scale}
               onScaleChanged={setReportedScale}
               onPageSingleTap={current => {
@@ -292,10 +326,20 @@ export function App() {
               style={styles.reader}
             />
           ) : (
-            <View style={styles.reader} />
+            <View style={[styles.reader, styles.emptyState]}>
+              <Text style={styles.eyebrow}>MAKIT · PDF READER</Text>
+              <Text style={styles.emptyTitle}>Простір для читання.</Text>
+              <Text style={styles.emptyDescription}>
+                Відкрийте свій PDF або синтетичний приклад. Файл залишається на
+                вашому пристрої.
+              </Text>
+            </View>
           )}
           {uri && (
             <View
+              onLayout={event =>
+                setPageControlsHeight(event.nativeEvent.layout.height)
+              }
               testID="example.page-controls"
               accessibilityElementsHidden={!toolsVisible}
               importantForAccessibility={
@@ -324,7 +368,23 @@ export function App() {
             </View>
           )}
           {panel && (
-            <View style={styles.panel}>
+            <View
+              testID="example.panel"
+              style={[
+                styles.panel,
+                compact && panel === 'search'
+                  ? styles.bottomPanel
+                  : styles.topPanel,
+              ]}
+              onLayout={event =>
+                setPanelLayout({
+                  top: event.nativeEvent.layout.y,
+                  bottom:
+                    event.nativeEvent.layout.y +
+                    event.nativeEvent.layout.height,
+                })
+              }
+            >
               <View style={styles.panelHeader}>
                 <Text style={styles.title}>
                   {
@@ -521,52 +581,80 @@ export function App() {
   );
 }
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#fff' },
+  screen: { flex: 1, backgroundColor: '#f2f5f3' },
+  emptyState: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 28,
+    gap: 16,
+  },
+  eyebrow: {
+    color: '#486950',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 2,
+  },
+  emptyTitle: {
+    fontSize: 34,
+    fontWeight: '600',
+    color: '#203a2a',
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    fontSize: 16,
+    lineHeight: 25,
+    maxWidth: 420,
+    color: '#536359',
+    textAlign: 'center',
+  },
   toolbar: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#fafcfb',
     flexDirection: 'row',
     justifyContent: 'space-around',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
-    minHeight: 48,
+    borderColor: '#d5dfd8',
+    minHeight: 64,
     alignItems: 'center',
   },
   panel: {
     position: 'absolute',
-    top: 100,
-    left: 12,
-    right: 12,
+    left: 16,
+    right: 16,
+    maxWidth: 620,
+    alignSelf: 'center',
     maxHeight: '60%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#fafcfb',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#d5dfd8',
     elevation: 8,
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
   },
+  topPanel: { top: 84 },
+  bottomPanel: { bottom: 80, maxHeight: '45%' },
   panelHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 8,
+    padding: 16,
   },
-  panelContent: { padding: 12, gap: 12 },
-  title: { fontSize: 22, fontWeight: '600' },
+  panelContent: { padding: 20, gap: 16 },
+  title: { fontSize: 22, fontWeight: '600', color: '#203a2a' },
   pageControls: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
-    minHeight: 48,
+    backgroundColor: '#fafcfb',
+    minHeight: 64,
   },
   controls: {
     flexDirection: 'row',
@@ -578,9 +666,11 @@ const styles = StyleSheet.create({
   query: {
     minWidth: 200,
     borderWidth: 1,
-    borderColor: '#777',
-    borderRadius: 6,
-    padding: 8,
+    borderColor: '#9bada1',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
   },
   reader: { flex: 1, minHeight: 100 },
 });

@@ -211,3 +211,23 @@ test('reveals an active match at the requested top inset without changing PDF la
     expect(container.scrollTop).toBe(330);
     expect(container.scrollLeft).toBe(0);
 });
+
+test('a late highlight render cannot override an explicit page command', async () => {
+    const ref = React.createRef();
+    const match = { page: 1, start: 0, length: 5, text: 'alpha', rects: [] };
+    const props = { sourceUri: 'blob:https://reader.test/navigation', ref, highlights: [match], activeMatch: 0 };
+    await mount(props);
+    await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
+    container.getBoundingClientRect = () => ({ top: 100, bottom: 900, left: 0, right: 600, width: 600, height: 800 });
+    const activeElement = { getBoundingClientRect: () => ({ top: 1200, bottom: 1220, left: 20, right: 100, width: 80, height: 20 }) };
+    const delayedReveal = tree.root.findAllByType(PdfPage)[0].props.onActiveMatch;
+    await act(() => ref.current.setPage(2));
+    expect(container.scrollTop).toBe(810);
+    await act(() => delayedReveal(activeElement));
+    expect(container.scrollTop).toBe(810);
+
+    // A newly selected match may still reveal itself normally.
+    await act(() => tree.update(React.createElement(PdfReader, { ...props, highlights: [{ ...match, start: 6 }] })));
+    await act(() => tree.root.findAllByType(PdfPage)[0].props.onActiveMatch(activeElement));
+    expect(container.scrollTop).toBeGreaterThan(810);
+});

@@ -1,7 +1,7 @@
 module.exports = {
-    rootDir: '../..',
-    roots: ['<rootDir>/packages/pdf-reader/src', '<rootDir>/packages/pdf-reader/test'],
-    testMatch: ['<rootDir>/packages/pdf-reader/test/*.test.js'],
+    rootDir: '.',
+    roots: ['<rootDir>/src', '<rootDir>/test'],
+    testMatch: ['<rootDir>/test/*.test.js'],
     testEnvironment: 'node',
     watchman: false,
     transform: {
@@ -13,8 +13,8 @@ module.exports = {
         }],
     },
     moduleNameMapper: {
-        '\\.css$': '<rootDir>/packages/pdf-reader/test/empty.cjs',
-        '^react-native$': '<rootDir>/packages/pdf-reader/test/react-native.cjs',
-        '^@maksym5248/react-native-pdf-reader$': '<rootDir>/packages/pdf-reader/src/index.ts',
+        '\\.css$': '<rootDir>/test/empty.cjs',
+        '^react-native$': '<rootDir>/test/react-native.cjs',
+        '^@makit/react-native-pdf$': '<rootDir>/src/index.ts',
     },
 };

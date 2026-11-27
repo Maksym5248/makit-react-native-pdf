@@ -2,3 +2,12 @@
 /android/.cxx/
 /lib/
 /*.tgz
+
+node_modules/
+lib/
+site-dist/
+*.tgz
+.expo/
+example-expo/ios/
+example-expo/android/
+.verification/
