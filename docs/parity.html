@@ -1,0 +1,151 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Platform parity · Makit PDF Reader</title><link rel="stylesheet" href="../style.css"><link rel="icon" href="../icon.svg" type="image/svg+xml"></head><body><header><nav class="nav" aria-label="Main navigation"><a class="brand" href="../">makit<span>PDF reader</span></a><div class="links"><a href="./">Documentation</a><a href="../demo/">Playground</a><a href="../">Home</a></div></nav></header><main class="wrap docs-layout"><nav class="sidebar" aria-label="Documentation"><a href="./index.html" >Overview</a><a href="./api.html" >API reference</a><a href="./expo.html" >Expo setup</a><a href="./parity.html" aria-current="page">Platform parity</a><a href="./contributing.html" >Development</a></nav><article class="doc"><h1>Reader capability matrix</h1>
+<p>The API is compared with react-native-pdf 7.0.4. File downloads, caching,
+bookmarks, persistence and application navigation belong to the consumer.
+This matrix describes the inherited contract and regression scenarios;
+it is not fresh native certification of the standalone/Expo build.</p>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>iOS / Android</th>
+<th>Web</th>
+<th>Evidence / boundary</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Local file</td>
+<td>absolute/file URI; Android content URI with caller permission</td>
+<td>caller-owned Blob URL</td>
+<td>API checks + two large local files; content-provider permissions remain caller-owned</td>
+</tr>
+<tr>
+<td>Initial page / setPage / page callback</td>
+<td>supported, document numbering from 1</td>
+<td>supported</td>
+<td>runtime renderer checks; commands before load covered by unit tests</td>
+</tr>
+<tr>
+<td>Continuous / horizontal / paging / single page</td>
+<td>supported</td>
+<td>supported, CSS snap</td>
+<td>native UI + renderer tests; browser flow</td>
+</tr>
+<tr>
+<td>RTL</td>
+<td>document-order navigation</td>
+<td>reverse page order</td>
+<td>runtime renderer checks on all three platforms</td>
+</tr>
+<tr>
+<td>scale/minScale/maxScale</td>
+<td>supported</td>
+<td>supported</td>
+<td>clamp tests; native pinch; browser scale control</td>
+</tr>
+<tr>
+<td>Pinch / double tap</td>
+<td>supported; single page disables interaction</td>
+<td>double click zoom; browser text selection; no custom touch pinch</td>
+<td>iOS/Android real two-pointer tests; iOS double tap</td>
+</tr>
+<tr>
+<td>fitPolicy, spacing, viewport clipping</td>
+<td>supported</td>
+<td>supported</td>
+<td>mixed page sizes, navigation, rotation checks</td>
+</tr>
+<tr>
+<td>Scroll lock</td>
+<td>supported</td>
+<td>overflow disabled</td>
+<td>public prop forwarding + web layout; gestures remain separate from scroll lock</td>
+</tr>
+<tr>
+<td>Scroll indicators</td>
+<td>native props preserved</td>
+<td>browser-controlled indicators</td>
+<td>Web does not promise independent per-axis indicator styling</td>
+</tr>
+<tr>
+<td>Antialiasing</td>
+<td>Android renderer option; PDFKit system rendering</td>
+<td>browser/PDF.js rendering</td>
+<td>platform-specific upstream option</td>
+</tr>
+<tr>
+<td>Password and retry</td>
+<td>supported</td>
+<td>supported, no prompt or retry loop</td>
+<td>API/renderer checks; password change recreates web worker</td>
+</tr>
+<tr>
+<td>Annotation rendering</td>
+<td>existing PDF annotations; toggle</td>
+<td>PDF.js annotation layer; toggle</td>
+<td>native implementation + prop regression tests; not annotation editing</td>
+</tr>
+<tr>
+<td>Load/page/error/scale/tap/link callbacks</td>
+<td>supported</td>
+<td>supported</td>
+<td>event-contract tests; runtime page/load/error/scale; web external links route to callback</td>
+</tr>
+<tr>
+<td>Embedded outline</td>
+<td>load callback, zero-based pageIdx</td>
+<td>nested outline resolved through PDF.js</td>
+<td>contract tests; no raw native pointer in portable API</td>
+</tr>
+<tr>
+<td>Rotation</td>
+<td>additional 0/90/180/270 over intrinsic rotation</td>
+<td>same</td>
+<td>mixed-size rotated fixture; native/browser UI checks</td>
+</tr>
+<tr>
+<td>Search + active/result highlights</td>
+<td>native TurboModule/JSI, asynchronous worker queue</td>
+<td>local PDF.js/search workers</td>
+<td>15 API checks, Unicode/multiline, visible highlights</td>
+</tr>
+<tr>
+<td>Metadata and text-layer detection</td>
+<td>lazy per-page, PDF points</td>
+<td>same</td>
+<td>API checks include actual image-only PDF</td>
+</tr>
+<tr>
+<td>Thumbnails</td>
+<td>shared search document; virtualized bounded JS cache</td>
+<td>same</td>
+<td>API/cache tests + thumbnail-to-page UI</td>
+</tr>
+<tr>
+<td>Saved position</td>
+<td>caller initializes <code>page</code> and stores callback value</td>
+<td>same</td>
+<td>no persistence side effect; intra-page offset not stored</td>
+</tr>
+</tbody></table>
+<h2>Deliberately outside the renderer</h2>
+<p>The old <code>source</code> download fields (<code>headers</code>, <code>method</code>, <code>cache</code>, <code>cacheFileName</code>,
+<code>expiration</code>), <code>trustAllCerts</code>, remote URL/asset downloading, <code>onLoadProgress</code>,
+<code>renderActivityIndicator</code> and <code>progressContainerStyle</code> describe fetching and its
+UI. They are not exposed. The caller downloads/resolves an asset first, passes
+its local URI and owns its loading/error presentation. A local renderer reports
+completion/error; it cannot truthfully report network progress.</p>
+<p><code>TableContent.mNativePtr</code> is not portable or safe to expose across engines;
+<code>IPdfOutline</code> contains title, zero-based page index and children. Page and search
+indices otherwise start at 1. Search offsets/geometry are engine-local, not a
+cross-platform persistence format. No OCR, PDF editing, form persistence,
+annotation authoring or document synchronization is claimed.</p>
+<h2>Validation boundaries</h2>
+<p>The original implementation was exercised with React Native 0.83.1 New Architecture,
+React 19.2, iOS simulators and an Android arm64 emulator. The standalone and Expo
+examples use React Native 0.83.10. New build/runtime results must be recorded separately;
+previous simulator evidence does not verify this copy or Expo.</p>
+<p>Build/codegen checks do not certify every OS, ABI, browser or React Native version.
+Peer ranges express the API baseline, not a tested compatibility matrix for all versions.
+Real-device release FPS, thermal behavior, screen-reader usability and absence of all
+memory leaks are not implied by simulator or mock tests.</p>
+</article></main></body></html>

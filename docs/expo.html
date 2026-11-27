@@ -1,0 +1,60 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Expo setup · Makit PDF Reader</title><link rel="stylesheet" href="../style.css"><link rel="icon" href="../icon.svg" type="image/svg+xml"></head><body><header><nav class="nav" aria-label="Main navigation"><a class="brand" href="../">makit<span>PDF reader</span></a><div class="links"><a href="./">Documentation</a><a href="../demo/">Playground</a><a href="../">Home</a></div></nav></header><main class="wrap docs-layout"><nav class="sidebar" aria-label="Documentation"><a href="./index.html" >Overview</a><a href="./api.html" >API reference</a><a href="./expo.html" aria-current="page">Expo setup</a><a href="./parity.html" >Platform parity</a><a href="./contributing.html" >Development</a></nav><article class="doc"><h1>Expo setup</h1>
+<p>The package includes native views and a TurboModule. Use an <strong>Expo development build</strong>;
+Expo Go cannot load this native implementation.</p>
+<p>The included example targets <strong>Expo SDK 55 / React Native 0.83.10 / React 19.2</strong> to match
+the library&#39;s current React Native line. Later SDKs require their own build/runtime validation;
+the package does not claim that every newer React Native version has been tested.</p>
+<h2>Existing application</h2>
+<p>Install the library tarball (or its package name after publication), then matching Expo dependencies:</p>
+<pre><code class="language-sh">npx expo install expo-dev-client
+npm install /absolute/path/to/reader-package.tgz
+</code></pre>
+<p>Add the plugin to <code>app.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;expo&quot;: {
+    &quot;plugins&quot;: [&quot;@makit/react-native-pdf&quot;]
+  }
+}
+</code></pre>
+<p>The plugin adds <code>https://jitpack.io</code> to Expo&#39;s <code>android.extraMavenRepos</code> Gradle property and preserves existing repository entries.
+React Native autolinking discovers the Android package, iOS pod and Codegen inputs.
+The plugin does not add broad file permissions, downloaders, network APIs or iOS entitlements.
+If you use <code>expo-build-properties</code>, list the PDF reader plugin <strong>after</strong> it so existing repository configuration is preserved.</p>
+<pre><code class="language-sh">npx expo prebuild
+npx expo run:ios --device
+# Select an existing simulator, or use:
+npx expo run:android
+npx expo start --dev-client
+</code></pre>
+<p>Prebuild generates native projects. Avoid <code>--clean</code> on projects with native changes you
+need to keep. Rebuild the development client after installing/changing native dependencies.</p>
+<h2>Included example</h2>
+<p>From the repository root:</p>
+<pre><code class="language-sh">npm ci
+npm run prebuild --workspace pdf-reader-expo-example
+npm run ios --workspace pdf-reader-expo-example -- --device &quot;iPhone 18 Pro&quot;
+# Or use an existing Android emulator:
+npm run android --workspace pdf-reader-expo-example
+npm run start --workspace pdf-reader-expo-example
+</code></pre>
+<p>Choose PDF uses <code>expo-document-picker</code> with <code>copyToCacheDirectory: true</code> so the reader
+gets an accessible local URI. The synthetic sample is written to the example&#39;s own
+Documents directory using <code>expo-file-system</code>. Neither operation uploads a document.
+File selection/storage belongs to this example, not to the library.</p>
+<p>The Web demo uses Webpack and local workers, as documented in the main README.
+Expo Metro Web is not currently a verified Web bundler for this package.</p>
+<h2>iOS 27 with the SDK 55 example</h2>
+<p>The SDK 55 template uses the legacy application lifecycle. When built with the iOS 27
+SDK, the example needs a scene delegate. Its local <code>plugins/with-ios-scene.cjs</code> config
+plugin adopts one scene and forwards link handling to the existing Expo AppDelegate.
+It runs during Prebuild, so the generated native directories remain disposable.</p>
+<p>This is an example bootstrap requirement; the published PDF plugin does not change
+an application&#39;s lifecycle. Existing apps own their scene setup. Newer Expo SDKs need
+their own compatibility validation with this library.</p>
+<h2>Sources</h2>
+<ul>
+<li><a href="https://expo.dev/changelog/sdk-55">Expo SDK 55</a></li>
+<li><a href="https://docs.expo.dev/develop/development-builds/introduction/">Development builds</a></li>
+<li><a href="https://docs.expo.dev/versions/v55.0.0/sdk/build-properties/">Build properties / extraMavenRepos</a></li>
+</ul>
+</article></main></body></html>

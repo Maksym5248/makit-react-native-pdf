@@ -1,0 +1,73 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Overview · Makit PDF Reader</title><link rel="stylesheet" href="../style.css"><link rel="icon" href="../icon.svg" type="image/svg+xml"></head><body><header><nav class="nav" aria-label="Main navigation"><a class="brand" href="../">makit<span>PDF reader</span></a><div class="links"><a href="./">Documentation</a><a href="../demo/">Playground</a><a href="../">Home</a></div></nav></header><main class="wrap docs-layout"><nav class="sidebar" aria-label="Documentation"><a href="./index.html" aria-current="page">Overview</a><a href="./api.html" >API reference</a><a href="./expo.html" >Expo setup</a><a href="./parity.html" >Platform parity</a><a href="./contributing.html" >Development</a></nav><article class="doc"><h1>Makit · React Native PDF</h1>
+<p>A local-first PDF reader for <strong>React Native iOS, Android and Web</strong>. Native rendering,
+background text search, highlights and thumbnails — without a WebView or a backend.</p>
+<blockquote>
+<p>Prepared for publication. The npm package and public website are not yet published.
+Package name: <code>@makit/react-native-pdf</code>. Scope ownership must be confirmed before publication.</p>
+</blockquote>
+<ul>
+<li><strong>iOS:</strong> PDFKit. <strong>Android:</strong> PDFium / AndroidPdfViewer. <strong>Web:</strong> locally bundled PDF.js workers.</li>
+<li>Read local files, search their existing text layer, navigate matches and render thumbnails.</li>
+<li>File ownership stays with your application. No downloader, upload, analytics, cache service or OCR.</li>
+<li>React 19 / React Native 0.83+, New Architecture. The Expo example targets SDK 55 / RN 0.83.10.</li>
+</ul>
+<h2>Install</h2>
+<p>Until publication, build and install a local tarball:</p>
+<pre><code class="language-sh">npm ci
+npm run patch:web
+npm run build
+npm pack --pack-destination /tmp
+# In your application:
+npm install /tmp/makit-react-native-pdf-0.1.0.tgz
+# Bare React Native iOS:
+cd ios &amp;&amp; bundle exec pod install
+</code></pre>
+<p>After publication, use <code>npm install @makit/react-native-pdf</code> instead.
+See <a href="expo.html">Expo setup</a> for development builds and Prebuild.</p>
+<h2>Quick start</h2>
+<pre><code class="language-tsx">import { PdfReader } from &#39;@makit/react-native-pdf&#39;;
+
+&lt;PdfReader
+  sourceUri={localFileUri}
+  style={{ flex: 1 }}
+  onPageChanged={(page, total) =&gt; console.log(page, total)}
+  onError={error =&gt; console.error(error.message)}
+/&gt;;
+</code></pre>
+<p>Native accepts absolute paths, <code>file://</code> and permitted Android <code>content://</code> URIs.
+Web accepts <code>blob:</code> URLs. HTTP(S), <code>data:</code> and relative sources are rejected.
+The application handles file permissions and keeps the file/Blob alive while in use.</p>
+<h2>Web</h2>
+<p>Install <code>react-pdf@9.2.1 pdfjs-dist@4.8.69 react-native-web</code>, then apply the supplied fixes:</p>
+<pre><code class="language-sh">node node_modules/@makit/react-native-pdf/scripts/apply-web-patches.cjs
+</code></pre>
+<p>Add that command to your application&#39;s <code>postinstall</code>. It checks exact peer versions,
+applies bundled patches in place, and safely accepts already-patched installations.
+Native-only applications do not need Web peers or patches. The helper uses the system
+<code>patch</code> command (available on macOS/Linux; on Windows use Git Bash or WSL).</p>
+<p>Configure <code>react-native</code> → <code>react-native-web</code> and prefer <code>.web</code> extensions in your
+bundler. Webpack bundles the PDF.js and search workers locally; no CDN is used.
+Your application owns offline availability of its own JS/worker assets.</p>
+<h2>Documentation</h2>
+<ul>
+<li><a href="api.html">Full API and reading modes</a></li>
+<li><a href="expo.html">Expo development builds</a></li>
+<li><a href="parity.html">Platform parity and limitations</a></li>
+<li><a href="contributing.html">Develop, test and publish</a></li>
+<li><a href="../demo/">Example application</a></li>
+</ul>
+<h2>Develop</h2>
+<pre><code class="language-sh">npm ci
+npm run patch:web
+npm test
+npm run typecheck
+npm run build
+npm run web                 # http://127.0.0.1:8093
+npm run build:site          # site-dist/ includes docs and /demo/
+npm run start --workspace pdf-reader-expo-example
+</code></pre>
+<h2>License and attribution</h2>
+<p>MIT. The native renderer derives from Wonday&#39;s react-native-pdf 7.0.4; retain
+<a href="../LICENSE">LICENSE</a> and <a href="../NOTICE">NOTICE</a>. Existing native identifiers retain their original
+prefix for registration compatibility. Install only one scoped copy in a native app to avoid duplicate native registrations. There is no dependency on the originating application.</p>
+</article></main></body></html>

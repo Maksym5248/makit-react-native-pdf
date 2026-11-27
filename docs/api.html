@@ -1,0 +1,164 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>API reference · Makit PDF Reader</title><link rel="stylesheet" href="../style.css"><link rel="icon" href="../icon.svg" type="image/svg+xml"></head><body><header><nav class="nav" aria-label="Main navigation"><a class="brand" href="../">makit<span>PDF reader</span></a><div class="links"><a href="./">Documentation</a><a href="../demo/">Playground</a><a href="../">Home</a></div></nav></header><main class="wrap docs-layout"><nav class="sidebar" aria-label="Documentation"><a href="./index.html" >Overview</a><a href="./api.html" aria-current="page">API reference</a><a href="./expo.html" >Expo setup</a><a href="./parity.html" >Platform parity</a><a href="./contributing.html" >Development</a></nav><article class="doc"><h1>API reference</h1>
+<h2>API</h2>
+<pre><code class="language-tsx">import { useRef } from &#39;react&#39;;
+import { PdfReader, type IPdfReaderRef } from &#39;@makit/react-native-pdf&#39;;
+
+const reader = useRef&lt;IPdfReaderRef&gt;(null);
+
+&lt;PdfReader
+    ref={reader}
+    sourceUri={localFileUri}
+    page={savedPage}
+    scale={1}
+    onPageChanged={(page, total) =&gt; saveProgress(page)}
+    onLoadComplete={(total, uri, size) =&gt; setLoading(false)}
+    onError={error =&gt; showError(error)}
+    style={{ flex: 1 }}
+/&gt;;
+
+reader.current?.setPage(12);
+</code></pre>
+<p>Нумерація сторінок починається з <strong>1</strong>. <code>page</code> задає початкову сторінку й реагує
+на зміну значення; <code>setPage</code> дозволяє повторно перейти до тієї самої сторінки.
+Команда до завершення завантаження застосовується після відкриття документа.
+Некоректні номери нормалізуються; команда після відкриття обмежена кількістю сторінок.
+<code>scale</code> типово обмежено 0.6–3 (можна задати <code>minScale</code>/<code>maxScale</code>); native підтримує pinch/double tap. <code>scrollEnabled={false}</code>
+вимикає прокрутку; <code>singlePage</code> показує лише поточну сторінку.
+Для стрічки мініатюр використовуйте <code>PdfThumbnails</code>, а не окремі reader-екземпляри.
+<code>enableAnnotationRendering</code> увімкнений за замовчуванням.</p>
+<p>Пакет повідомляє лише номер сторінки: закладки, зміст, прогрес, історія та інші
+дані належать застосунку. Точне зміщення всередині сторінки й масштаб не зберігаються.</p>
+<h2>Локальні джерела</h2>
+<ul>
+<li>Native: абсолютний файловий шлях або <code>file:///...</code>; Android також <code>content://...</code>
+із уже наданим доступом. Дозволи на файл забезпечує споживач.</li>
+<li>Web: <code>blob:</code> URL із <code>URL.createObjectURL(fileOrBlob)</code>. Підтримку Blob та
+IndexedDB-кешу забезпечує застосунок. URL не можна відкликати, доки reader його використовує.</li>
+<li>HTTP(S), data URL і відносні шляхи відхиляються через <code>onError</code>; мережевого fallback немає.</li>
+<li>Помилки відсутнього, пошкодженого або захищеного паролем PDF передаються через <code>onError</code>.</li>
+<li>Зміна URI створює новий документ. Події старого JS-компонента після демонтування ігноруються.</li>
+</ul>
+<p>PDF.js worker включається Webpack/Next у збірку через <code>new URL(..., import.meta.url)</code>.
+React-PDF 9.2.1 та його PDF.js мають постачатися разом; CDN не використовується.
+Включений <code>patches/react-pdf+9.2.1.patch</code> виправляє cleanup текстового шару:
+скасоване завдання не викликає success/error callbacks, активні помилки залишаються
+видимими. Для споживача: <code>node node_modules/@makit/react-native-pdf/scripts/apply-web-patches.cjs</code>. Скрипт перевіряє версії та повторне застосування.
+Для повністю офлайн холодного запуску Web сам застосунок має забезпечити доступність
+JS/worker assets: пакет не додає service worker.</p>
+<h2>Пошук і підсвічування</h2>
+<pre><code class="language-ts">const document = await openPdfSearch(localUri, password);
+try {
+    const result = await document.searchPage(1, &#39;книга&#39;);
+    // Передайте result.matches у PdfReader.highlights,
+    // а індекс активного збігу — в activeMatch.
+} finally {
+    document.close();
+}
+</code></pre>
+<p>Native API — React Native Codegen TurboModule через JSI; PDFKit/PDFium працюють
+у виділеній послідовній черзі з окремим документом від renderer. Web витягає
+текст через локальний PDF.js worker, шукає в окремому worker і підсвічує точні
+частини text-layer spans. Native iOS використовує PDFSelection, Android —
+геометрію PDFium і canvas overlay. Виділення не записуються у PDF.</p>
+<p>Нумерація сторінок від 1. Пошук без урахування регістру за замовчуванням.
+Максимум 512 символів у запиті, 256 збігів на сторінку, 128 прямокутників на
+збіг; <code>truncated</code> повідомляє ліміт збігів. <code>hasText</code> дозволяє відрізнити відсутній
+текстовий шар від відсутності збігів. OCR не виконується. <code>close()</code> ідемпотентний;
+після close відкладений результат відхиляється. Споживач запитує сторінки порціями
+і припиняє запитувати наступні при скасуванні. Поточна нативна операція на сторінці
+дозавершується у своїй черзі, UI не очікує її синхронно.</p>
+<p><code>start</code>/<code>length</code> належать текстовому представленню конкретної платформи, їх не
+можна зберігати як переносимі координати або змішувати між PDF-рушіями. Web
+використовує текстові інтервали, тому <code>rects</code> порожній. Нативні <code>rects</code> призначені
+для поточного renderer; iOS використовує selection ranges для врахування повороту.</p>
+<h2>Режими читання</h2>
+<ul>
+<li><code>enablePaging={false}</code> — безперервна прокрутка; <code>true</code> — посторінкове гортання
+(Web: CSS scroll snap).</li>
+<li><code>horizontal</code> задає горизонтальний напрям незалежно від повороту сторінок.</li>
+<li><code>rotation={0 | 90 | 180 | 270}</code> — додатковий поворот за годинниковою стрілкою,
+поверх повороту, записаного у PDF. Файл на диску не змінюється.</li>
+<li><code>fitPolicy={0}</code> — за шириною, <code>1</code> — за висотою, <code>2</code> — уся сторінка;
+<code>scale</code> застосовується поверх підгонки. Для повернення до підгонки задайте <code>scale={1}</code>.</li>
+<li><code>singlePage</code> показує тільки вибрану сторінку; це окрема опція від paging.</li>
+</ul>
+<p>iOS використовує PDFKit rotation; Android — маленький JNI binding до публічного
+<code>FPDFPage_SetRotation</code> з PDFiumAndroid 1.0.35, під його глобальним lock. Зміна
+повороту перевідкриває renderer і перераховує геометрію сторінок; пошук і
+мініатюри залишаються в окремій сесії. Для великих документів цей перехід
+потребує заміру часу на пристроях. Web повертає canvas, text та annotation layers
+разом через PDF.js. Android накладає той самий поворот на координати збігів.</p>
+<p>Native також має RTL, scroll indicators, antialiasing, double tap, password,
+outline у четвертому аргументі onLoadComplete та callbacks scale/tap/link.
+Web підтримує RTL-порядок, double-click zoom, outline і callbacks; custom touch pinch та незалежне оформлення scroll indicators не заявляються. <a href="parity.html">Матриця паритету</a>.</p>
+<h2>Метадані й мініатюри</h2>
+<pre><code class="language-tsx">const document = await openPdfSearch(localUri, password);
+const count = document.pages; // доступно без PdfReader
+const info = await document.getPageInfo(3);
+const text = await document.getPageText(3); // Текст однієї сторінки, без OCR; для скану порожній рядок.
+// width/height: PDF points, до intrinsic rotation; rotation: поворот у файлі;
+// hasText: текстовий шар цієї сторінки (не всього документа, без OCR).
+const image = await document.renderThumbnail(3, 160);
+// { uri: &#39;data:image/png;base64,...&#39;, width, height }, розмір у пікселях
+
+&lt;PdfThumbnails
+    document={document}
+    page={currentPage}
+    onPageSelected={page =&gt; reader.current?.setPage(page)}
+    onError={showError}
+/&gt;;
+// Після демонтування споживачів:
+document.close();
+</code></pre>
+<p>Пошук, метадані та мініатюри повторно використовують <strong>цю саму сесію</strong>. Метадані
+зчитуються на запит для конкретної сторінки, повний текст документа наперед не
+індексується. Розміри — crop box (або media box, якщо crop box відсутній).
+Мініатюри враховують поворот із файла; додатковий viewing rotation не змінює їх.</p>
+<p><code>renderThumbnail</code> обмежує найбільшу сторону 512 px (типово 160). <code>PdfThumbnails</code>
+віртуалізує стрічку, рендерить послідовно тільки її видиме вікно по 160 px
+та тримає максимум 2 MiB закодованих зображень у своєму JS-кеші.
+ThumbnailLoader підтримує також вищі сітки без обрізання списку видимих сторінок.
+Це не ліміт усієї пам’яті PDF-рушія або системного image cache. Нативні bitmap і
+тимчасовий Web canvas звільняються після кодування; PNG-файли на диск не пишуться.
+При прокрутці черга замінюється, при демонтуванні — очищується; поточна операція
+дозавершується, застарілий результат ігнорується. Власні споживачі API мають самі
+обмежувати кількість одночасних запитів і час зберігання отриманих зображень.</p>
+<h2>Перевірки</h2>
+<pre><code class="language-sh">npm test
+npm run typecheck
+npm run lint
+npm run test:web-build
+npm run typecheck:example
+npm run build:web --workspace pdf-reader-example
+</code></pre>
+<p>Unit/component тести охоплюють URI, навігацію, lifecycle, пошук,
+Unicode, багаторядкові збіги, ліміти, HTML escaping, чергу й кеш мініатюр.
+Native runtime і Web — окремі перевірки; результат Web не підтверджує native.
+Див. <a href="parity.html">матрицю можливостей</a>. Текстові offsets залежать від рушія;
+пакет не виконує OCR.</p>
+<h3>Власний інтерфейс мініатюр</h3>
+<p><code>ThumbnailLoader</code> експортується для host-застосунків із власною стрічкою або
+сіткою. Створіть його з відкритим <code>IPdfSearchDocument</code> та callback зображень,
+передавайте видимі номери через <code>setPages(pages)</code> і викликайте <code>dispose()</code> при
+закритті UI. Документ належить caller; loader не закриває його. Це той самий
+обмежений кеш і черга, які використовує <code>PdfThumbnails</code>.</p>
+<h3>Одиночний тап і панелі застосунку</h3>
+<p><code>onPageSingleTap(page, x, y)</code> повідомляє про підтверджений одиночний тап по PDF.
+Пакет розпізнає жест; видимістю панелей керує застосунок. Подвійний тап для
+масштабування, прокрутка, pinch, довге натискання, виділення тексту та PDF-посилання
+не повинні перемикати інструменти. Web очікує завершення послідовності кліків
+перед callback; native використовує платформне підтвердження жесту.</p>
+<p>Розміщуйте панелі поверх стабільної області рендерера: зміна її висоти впливає
+на fit-height/fit-page. Не змінюйте <code>key</code> або <code>sourceUri</code> заради приховування UI.
+Приклад демонструє приховування/відновлення панелей тапом, не закриваючи PDF.
+Застосунок також має надати альтернативу для клавіатури та screen reader.</p>
+<h3>Індикатор відкриття</h3>
+<p><code>renderLoading?: () =&gt; ReactNode</code> замінює стандартний ActivityIndicator власним
+компонентом. Пакет показує overlay від відкриття локального джерела до готовності
+рендерера (на Web — canvas початкової сторінки), прибирає його при помилці та
+повторно показує при заміні джерела. Приклад: <code>renderLoading={() =&gt; &lt;MyLoader /&gt;}</code>.
+Завантаження файлу з мережі й індикатор цього етапу залишаються відповідальністю
+застосунку. Автономний example демонструє власний індикатор.</p>
+<h3>Search result viewport insets</h3>
+<p><code>highlightContentInsets={{ top: headerHeight, bottom: toolbarHeight }}</code> controls scrolling to the active search result. Values are logical pixels; omitted sides default to zero. It does not add padding or resize the PDF. Navigation is clamped at document boundaries, so a result at the very start/end can still be covered by an overlay. Pass measured overlay sizes and update them when panels change.</p>
+</article></main></body></html>
