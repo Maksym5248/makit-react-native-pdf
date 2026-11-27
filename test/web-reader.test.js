@@ -47,7 +47,7 @@ test('scrolling updates current page without snapping back to its top', async ()
     await mount({ sourceUri: 'blob:https://ammo.test/book', onPageChanged });
     await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
     container.scrollTop = 1000;
-    await act(() => observer([{ isIntersecting: true, intersectionRatio: 0.8, target: { getAttribute: () => '2' } }]));
+    await act(() => observer([{ isIntersecting: true, intersectionRatio: 0.8, intersectionRect: { width: 600, height: 640 }, target: { getAttribute: () => '2' } }]));
     expect(onPageChanged).toHaveBeenLastCalledWith(2, 8);
     expect(container.scrollTop).toBe(1000);
 });
@@ -102,7 +102,7 @@ test('changing reading direction keeps the page reached by scrolling', async () 
     const props = { sourceUri: 'blob:https://ammo.test/book' };
     await mount(props);
     await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
-    await act(() => observer([{ isIntersecting: true, intersectionRatio: 0.8, target: { getAttribute: () => '4' } }]));
+    await act(() => observer([{ isIntersecting: true, intersectionRatio: 0.8, intersectionRect: { width: 600, height: 640 }, target: { getAttribute: () => '4' } }]));
     await act(() => tree.update(React.createElement(PdfReader, { ...props, horizontal: true })));
     expect(container.scrollLeft).toBe(1830);
 });
@@ -230,4 +230,16 @@ test('a late highlight render cannot override an explicit page command', async (
     await act(() => tree.update(React.createElement(PdfReader, { ...props, highlights: [{ ...match, start: 6 }] })));
     await act(() => tree.root.findAllByType(PdfPage)[0].props.onActiveMatch(activeElement));
     expect(container.scrollTop).toBeGreaterThan(810);
+});
+
+
+test('a small fully visible neighbouring page does not replace the larger visible page', async () => {
+    const onPageChanged = jest.fn();
+    await mount({ sourceUri: 'blob:https://reader.test/mixed-pages', onPageChanged });
+    await act(() => tree.root.findByType('Document').props.onLoadSuccess(pdf));
+    await act(() => observer([
+        { isIntersecting: true, intersectionRatio: 0.7, intersectionRect: { width: 600, height: 560 }, target: { getAttribute: () => '2' } },
+        { isIntersecting: true, intersectionRatio: 1, intersectionRect: { width: 200, height: 150 }, target: { getAttribute: () => '3' } },
+    ]));
+    expect(onPageChanged).toHaveBeenLastCalledWith(2, 8);
 });

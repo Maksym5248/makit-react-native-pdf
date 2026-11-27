@@ -147,12 +147,13 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
 
     useEffect(() => {
         if (!container.current || single || !total) return;
+        // Compare visible area: a tiny fully visible page must not outweigh a larger page.
         const visibility = new Map<number, number>();
         const observer = new IntersectionObserver(
             entries => {
                 for (const entry of entries) {
                     const page = Number(entry.target.getAttribute('data-page-number'));
-                    if (entry.isIntersecting) visibility.set(page, entry.intersectionRatio);
+                    if (entry.isIntersecting) visibility.set(page, entry.intersectionRect.width * entry.intersectionRect.height);
                     else visibility.delete(page);
                 }
                 const visible = [...visibility.keys()];
