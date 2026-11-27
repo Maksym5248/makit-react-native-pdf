@@ -46,6 +46,8 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
     }, []);
     const requestedPage = useRef(clampPage(props.page ?? 1));
     const previousPageProp = useRef(props.page);
+    const commandedPage = useRef<number | undefined>(undefined);
+    const releasePageCommand = () => { commandedPage.current = undefined; };
     const ignoredActiveMatch = useRef<IPdfSearchMatch | undefined>(undefined);
     const [worker, setWorker] = useState<PDFWorker>();
     const documentOptions = useMemo(() => ({ ...options, worker, password: props.password }), [worker, props.password]);
@@ -112,6 +114,7 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
             const next = clampPage(page, total);
             const selectedMatch = callbacks.current.highlights?.[callbacks.current.activeMatch ?? -1];
             ignoredActiveMatch.current = selectedMatch && selectedMatch.page !== next ? selectedMatch : undefined;
+            commandedPage.current = next;
             requestedPage.current = next;
             setCurrent(next);
             setVisiblePages(new Set([next - 1, next, next + 1]));
@@ -159,7 +162,7 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
                 const visible = [...visibility.keys()];
                 if (!visible.length) return;
                 const best = [...visibility].sort((a, b) => b[1] - a[1])[0];
-                if (best) {
+                if (best && commandedPage.current === undefined) {
                     requestedPage.current = best[0];
                     setCurrent(best[0]);
                 }
@@ -258,6 +261,10 @@ const WebDocument = forwardRef<IPdfReaderRef, IPdfReaderProps>((props, ref) => {
         <View style={[styles.document, props.style]}>
             <div
                 ref={container}
+                onWheel={releasePageCommand}
+                onTouchMove={releasePageCommand}
+                onPointerDown={releasePageCommand}
+                onKeyDown={releasePageCommand}
                 onDoubleClick={event => {
                     if (event.target instanceof Element && event.target.closest('a, button, input, textarea, select')) return;
                     if (props.enableDoubleTapZoom === false || single) return;
